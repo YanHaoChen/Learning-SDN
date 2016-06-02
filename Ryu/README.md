@@ -1,0 +1,2 @@
+# Ryu
+Ryu在SDN中負責的就是管理部分，也就是controller的角色。Ryu是透過Python進行編寫，可以照自己的需求建立一個controller，可結合實體設備或Mininet運行，執行封包配送、封包監控等功能。
