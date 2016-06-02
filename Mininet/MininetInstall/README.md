@@ -20,5 +20,5 @@ $ util/install.sh -a
 $ sudo mn
 ```
 執行後，如果你看到：
-![running][https://github.com/imac-cloud/SDN-tutorial/blob/master/Mininet/MininetInstall/images/running.png]
+![running](https://github.com/imac-cloud/SDN-tutorial/blob/master/Mininet/MininetInstall/images/running.png?raw=true)
 就可以確定是安裝成功的。
