@@ -102,7 +102,7 @@ def switch_features_handler(self, ev):
 產生一個OFPActionOutput類別action，並指定他是要傳送至Controller的（ofproto.OFPP_ CONTROLLER），且並不使用Buffer（ofproto.OFPCML_ NO_BUFFER）。
 
 #### self.add_flow(dat…
-夾帶datapath、優先權（0）、match、actions，到我們自行寫的add_flowfunc中（等一下文中會進行介紹），並觸發Packet-In事件（封包並沒有match到任何Flow Entry的情況下，就會觸發）。
+夾帶datapath、優先權（0）、match、actions，到我們自行寫的add_flow func中（等一下文中會進行介紹），並觸發Packet-In事件（封包並沒有match到任何Flow Entry的情況下，就會觸發）。
 
 > Table-miss Flow Entry的優先權規定為0，也就是最低的優先權。
 
