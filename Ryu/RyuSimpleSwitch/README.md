@@ -119,7 +119,7 @@ def _packet_in_handler(self, ev):
 ```
 在Packet-In事件處理中，一開始的參數設定跟剛剛所提到的是一樣的，所以不再贅述囉！接下來直接進入```更新MAC位址表```的部分。
 
-```
+```python
 def _packet_in_handler(self, ev):
     #...
  
@@ -141,13 +141,15 @@ def _packet_in_handler(self, ev):
 ```
 
 #### 解析訊息，並存放至參數中
-```in_port```、```pkt```、```eth```、```dst```、```src```、```dpid```。以上都是等一下，運作中會用到的參數。
+
+in_port、pkt、eth、dst、src、dpid。以上都是等一下，運作中會用到的參數。
 
 #### 設定更新MAC表
 self.mac_ to_ port.setdefault(dpid, {})及self.mac_ to_ port[dpid][src] = in_port的作用，都是用來將來源主機放入MAC表中。
+
 > 會使用dpid當mac_ to_port的第一識別參數，是因為當有多個OpenFlow交換器時，可以使用它來識別
 
-```python
+```
 def _packet_in_handler(self, ev):
  
     #...
