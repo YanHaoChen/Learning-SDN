@@ -58,9 +58,9 @@ class SimpleSwitch13(app_manager.RyuApp):
 
 ## 加入 Table-miss Flow Entry 事件處理
 
-在OpenFlow Switch中，至少有一個```Flow Table```，每個```Flow Table```又會包含多個```Table Entry```。這些```Flow Table```是有分優先權的，優先權的順序由0開始往上。```Flow Table```中存放的```Table Entry```，裡面所包含的就是相對應的執行動作。當```Packet-in```的時候，就會去```Flow Table```中，找尋可以```match```的```Flow Entry```並執行其```Flow Entry```設定的執行的動作。
+在OpenFlow Switch中，至少有一個```Flow Table```，每個```Flow Table```又會包含多個```Flow Entry```。這些```Flow Table```是有分優先權的，優先權的順序由0開始往上。```Flow Table```中存放的```Flow Entry```，裡面所包含的就是相對應的執行動作。當```Packet-in```的時候，就會去```Flow Table```中，找尋可以```match```的```Flow Entry```並執行其```Flow Entry```設定的執行的動作。
 
-在這裡增加的```Table-miss Flow Entry```，就是要處裡「遇到沒辦法```match```的```Table Entry```」該做的事。
+在這裡增加的```Table-miss Flow Entry```，就是要處裡「遇到沒辦法```match```的```Flow Entry```」該做的事。
 
 ```python
 @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
