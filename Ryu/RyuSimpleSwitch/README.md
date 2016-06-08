@@ -227,4 +227,5 @@ def _packet_in_handler(self, ev):
 
 雖然只是實現一個簡單Switch的功能，但裡面包含了許多OpenFlow Switch的基本知識。如對OpenFlow Switch的概念還不清楚，可以透過這隻app，初步認識OpenFlow Switch。
 
-
+## 參考
+[Ryubook](https://osrg.github.io/ryu-book/zh_tw/Ryubook.pdf)
