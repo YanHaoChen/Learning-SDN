@@ -16,11 +16,11 @@ from ryu.lib import hub
 
 在此，為對輸出的資訊進行排序所需的函式。利用此函式，在使用```sorted```（排序）時，可以簡化給參數```key```的方式。使用方式如下：
 
-```
+```python
 sorted(objects, key= attrgetter('Attribute_A'))
 ```
 
-```objects```在排列時，就會針對```objects```的```Attribute_A```屬性，進行排序。
+objects在排序時，就會針對objects的```Attribute_A```屬性，進行排序。
 
 ### ryu.controller的事件類別名稱
 
