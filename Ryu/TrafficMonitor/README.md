@@ -1,6 +1,6 @@
 # Traffic Monitor
 
-透過繼承```simple_switch_13```完成封包轉送的需求，並不斷發出```OFPFlowStatsRequest ```及```OFPPortStatsRequest ```，取得流通的封包資訊。
+透過繼承```simple_switch_13```完成封包轉送的需求，並不斷發出```OFPFlowStatsRequest ```及```OFPPortStatsRequest ```，取得網路狀況統計資訊。
 
 ## 宣告
 ```python
@@ -20,7 +20,7 @@ from ryu.lib import hub
 sorted(objects, key= attrgetter('Attribute_A'))
 ```
 
-objects在排序時，就會針對objects的```Attribute_A```屬性，進行排序。
+objects 在排序時，就會針對objects的```Attribute_A```屬性，進行排序。
 
 ### ryu.controller 的事件類別名稱
 
@@ -32,7 +32,7 @@ objects在排序時，就會針對objects的```Attribute_A```屬性，進行排�
 當裝飾器使用。因 Ryu 皆受到任何一個 OpenFlow 的訊息，都會需要產生一個對應的事件。為了達到這樣的目的，透過 set_ ev_cls 當裝飾器，依接收到的參數（事件類別、Switch 狀態），而進行反應。
 
 ### hub
-在此，用來負責多執行緒的工作。Ryubook 中有提到，其本質是使用```eventlet```進行。```eventlet```的```green threads```所擁有的特性，相當適用於網路架構所需的執行緒需求。（並沒有真正使用過，在此不多做介紹，以免誤導）
+在此，用來負責執行緒的工作。Ryubook 中有提到，其本質是使用```eventlet```進行。```eventlet```的```green threads```所擁有的特性，相當適用於網路架構所需的執行緒需求。（並沒有真正使用過，在此不多做介紹，以免誤導）
 
 ## 初始化
 
@@ -51,6 +51,8 @@ class SimpleMonitor(simple_switch_13.SimpleSwitch13):
 ### self.datapaths = {}
 
 用來存放監測中的 Datapath 資訊。
+
+> Datapath 在 Ryu 中，指的就是 Switch。
 
 ### self.monitor_ thread = hub.spawn(self._monitor)
 
@@ -121,7 +123,7 @@ def _request_stats(self, datapath):
 
 ## FlowStatsReply 事件
 
-在此，主要是處理接收到的 Flow 狀況，並顯示出來。
+處理接收到的 Flow 的狀況，並顯示出來。
 
 ```python
 #...
@@ -147,17 +149,17 @@ def _flow_stats_reply_handler(self, ev):
 ```
 ### stat排序的方式
 
-在此透過```sorted```函式，進行排序。
+透過```sorted```函式，進行排序。
 
 ```python
 [flow for flow in body if flow.priority == 1]
 ```
-將被排序的物件。找尋 ```body``` (為 OFPFlowStats 的列表）內的所有資料，將資料中的 ```flow.priority == 1```的資料納入將要排序的物件中（排除 Table-miss Flow）。
+以上程式碼用來產生，將被排序的物件。找尋 ```body``` (為 OFPFlowStats 的列表）內的所有資料，將資料中的 ```flow.priority == 1```的資料納入將要排序的物件中（排除 Table-miss Flow）。
 
 ```python
 lambda flow: (flow.match['in_port'],flow.match['eth_dst'])
 ```
-為排序條件。因```key```的參數型態為函式，所以透過```lambda```來建立排序條件，並依```in_port```跟 ```eth_dst```進行排序。
+以上程式碼用來產生排序條件。因```key```的參數型態為函式，所以透過```lambda```來建立排序條件，並依```in_port```跟 ```eth_dst```進行排序。
 
 > Ryubook 中也有提到，將資料轉換成```json```格式的方式：
 > 
@@ -170,6 +172,38 @@ lambda flow: (flow.match['in_port'],flow.match['eth_dst'])
 > 如要進行分析，將資料轉成```json```是個不錯的選擇。
 
 ## PortStatsReply 事件
+
+處理接收到的 Port 的狀況，並顯示出來。
+
+```python
+#...
+
+@set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
+def _port_stats_reply_handler(self, ev):
+    body = ev.msg.body
+
+    self.logger.info('datapath         port     '
+                     'rx-pkts  rx-bytes rx-error '
+                     'tx-pkts  tx-bytes tx-error')
+    self.logger.info('---------------- -------- '
+                     '-------- -------- -------- '
+                     '-------- -------- --------')
+    for stat in sorted(body, key=attrgetter('port_no')):
+        self.logger.info('%016x %8x %8d %8d %8d %8d %8d %8d',
+                         ev.msg.datapath.id, stat.port_no,
+                         stat.rx_packets, stat.rx_bytes, stat.rx_errors,
+                         stat.tx_packets, stat.tx_bytes, stat.tx_errors)
+
+```
+### stat排序的方式
+在此```body```指的是 OFPPortStats 的資料列表。利用```attrgetter```函式，將```port_no```當成排序條件。
+
+## 執行
+可以用在 [Mininet 連結 Ryu](https://github.com/imac-cloud/SDN-tutorial/tree/master/MininetConnectRyu) 中的 Mininet 設定方式，將 Mininet 連結 Monitor 連結，並透過操作 Mininet 檢視監控成果。
+
+```shell
+$ ryu-manager --verbose ./SimpleMonitor.py
+```
 
 ## 參考
 [Ryubook](https://osrg.github.io/ryu-book/zh_tw/html/traffic_monitor.html)
