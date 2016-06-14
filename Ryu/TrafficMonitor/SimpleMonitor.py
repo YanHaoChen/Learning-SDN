@@ -46,7 +46,8 @@ class SimpleMonitor(simple_switch_13.SimpleSwitch13):
 	def _flow_stats_reply_handler(self, ev):
 		body = ev.msg.body
 		self.logger.info('%s',json.dumps(ev.msg.to_jsondict(), ensure_ascii=True, indent=3, sort_keys=True))	
-
+	
+	@set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
 	def _port_stats_reply_handler(self,ev):
 		body = ev.msg.body
 		self.logger.info('%s',json.dumps(ev.msg.to_jsondict(), ensure_ascii=True, indent=3, sort_keys=True))	
