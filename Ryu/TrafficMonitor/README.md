@@ -20,16 +20,16 @@ from ryu.lib import hub
 sorted(objects, key= attrgetter('Attribute_A'))
 ```
 
-objects 在排序時，就會針對objects的```Attribute_A```屬性，進行排序。
+objects 在排序時，就會針對 objects 的```Attribute_A```屬性，進行排序。
 
 ### ryu.controller 的事件類別名稱
 
 * MAIN_DISPATCHER：一般狀態
 * DEAD_DISPATCHER：連線中斷
 
-### set_ ev_cls
+### set\_ev\_cls
 
-當裝飾器使用。因 Ryu 皆受到任何一個 OpenFlow 的訊息，都會需要產生一個對應的事件。為了達到這樣的目的，透過 set_ ev_cls 當裝飾器，依接收到的參數（事件類別、Switch 狀態），而進行反應。
+當裝飾器使用。因 Ryu 皆受到任何一個 OpenFlow 的訊息，都會需要產生一個對應的事件。為了達到這樣的目的，透過 set\_ev\_cls 當裝飾器，依接收到的參數（事件類別、Switch 狀態），而進行反應。
 
 ### hub
 在此，用來負責執行緒的工作。Ryubook 中有提到，其本質是使用```eventlet```進行。```eventlet```的```green threads```所擁有的特性，相當適用於網路架構所需的執行緒需求。（並沒有真正使用過，在此不多做介紹，以免誤導）
@@ -54,12 +54,12 @@ class SimpleMonitor(simple_switch_13.SimpleSwitch13):
 
 > Datapath 在 Ryu 中，指的就是 Switch。
 
-### self.monitor_ thread = hub.spawn(self._monitor)
+### self.monitor\_thread = hub.spawn(self.\_monitor)
 
 將```_monitor```方法放入執行緒中。不斷執行```取得統計狀況請求```。
 
 ## EventOFPStateChange 事件
-在此事件中，我們可以接收到Datapath狀態改變的訊息，藉此修改```self.datapath```，讓```self.datapath```只存放正在監控中的Datapath。
+在此事件中，我們可以接收到 Datapath 狀態改變的訊息，藉此修改```self.datapath```，讓```self.datapath```只存放正在監控中的 Datapath。
 
 ```python
 #...
@@ -82,7 +82,7 @@ def _state_change_handler(self, ev):
 
 * 如果狀態是```DEAD_DISPATCHER```且在```self.datapath```中，則從```self.datapath```中移除。
 
-## def _monitor(self):
+## def \_monitor(self):
 
 每間隔10秒，向監測中的 Datapath 發出```取得統計狀況請求```。
 
@@ -97,7 +97,7 @@ def _monitor(self):
 #...
 ```
 
-## def _ request_stats(self, datapath):
+## def \_request\_stats(self, datapath):
 在此分別製作```OFPFlowStatsRequest```、```OFPPortStatsRequest ```請求訊息並發送。
 
 ```python
@@ -119,7 +119,7 @@ def _request_stats(self, datapath):
 * OFPFlowStatsRequest：用來對 Datapath 的 Flow Entry 取得統計的資料。
 * OFPPortStatsRequest：用來取得關於 Datapath 每個 Port 的相關資訊以及統計訊息。 
 
-> OFPPortStatsRequest 取的指定Port的訊息，這邊使用```ofproto.OFPP_ANY```，代表指定所有的 Port。
+> OFPPortStatsRequest 取的指定 Port 的訊息，這邊使用```ofproto.OFPP_ANY```，代表指定所有的 Port。
 
 ## FlowStatsReply 事件
 
@@ -147,14 +147,14 @@ def _flow_stats_reply_handler(self, ev):
                          stat.packet_count, stat.byte_count)
 #...
 ```
-### stat排序的方式
+### stat 排序的方式
 
 透過```sorted```函式，進行排序。
 
 ```python
 [flow for flow in body if flow.priority == 1]
 ```
-以上程式碼用來產生，將被排序的物件。找尋 ```body``` (為 OFPFlowStats 的列表）內的所有資料，將資料中的 ```flow.priority == 1```的資料納入將要排序的物件中（排除 Table-miss Flow）。
+以上程式碼用來產生，將被排序的物件。找尋```body```(為 OFPFlowStats 的列表）內的所有資料，將資料中的 ```flow.priority == 1```的資料納入將要排序的物件中（排除 Table-miss Flow）。
 
 ```python
 lambda flow: (flow.match['in_port'],flow.match['eth_dst'])
@@ -163,7 +163,7 @@ lambda flow: (flow.match['in_port'],flow.match['eth_dst'])
 
 > Ryubook 中也有提到，將資料轉換成```json```格式的方式：
 > 
-> ```
+> ```python
 > import json
 
 > self.logger.info('%s', json.dumps(ev.msg.to_jsondict(), ensure_ascii=True,indent=3, sort_keys=True))
@@ -195,7 +195,7 @@ def _port_stats_reply_handler(self, ev):
                          stat.tx_packets, stat.tx_bytes, stat.tx_errors)
 
 ```
-### stat排序的方式
+### stat 排序的方式
 在此```body```指的是 OFPPortStats 的資料列表。利用```attrgetter```函式，將```port_no```當成排序條件。
 
 ## 執行
