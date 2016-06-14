@@ -13,35 +13,34 @@ simple_switch_instance_name = 'simple_switch_api_app'
 url = '/simpleswitch/mactable/{dpid}'
 
 class SimpleSwitchRest13(simple_switch_13.SimpleSwitch13):
-	_CONTEXTS = {'wsgi':WSGIApplicaton}
+	_CONTEXTS = {'wsgi':WSGIApplication}
 
 	def __init__(self, *args, **kwargs):
-		super(SimpleSwitchRest13, self).__init__(*args, *kwargs)
-		self.switchs = {}
+		super(SimpleSwitchRest13, self).__init__(*args, **kwargs)
+		self.switches = {}
 		wsgi = kwargs['wsgi']
 		wsgi.register(SimpleSwitchController, {simple_switch_instance_name : self})
 
-	@set_ev_cls(ofp_EventOFPSwitchFeatures, CONFIG_DISPATCHER)
+	@set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
 	def switch_features_handler(self, ev):
 		super(SimpleSwitchRest13, self).switch_features_handler(ev)
+		datapath = ev.msg.datapath
 		self.switches[datapath.id] = datapath
 		self.mac_to_port.setdefault(datapath.id, {})	
 
 	def set_mac_to_port(self, dpid, entry):
-		mac_table = self.mac_to_port(dpid, {})
+		mac_table = self.mac_to_port.setdefault(dpid, {})
 		datapath = self.switches.get(dpid)
 
 		entry_port = entry['port']
 		entry_mac = entry['mac']
-
 		if datapath is not None:
 			parser = datapath.ofproto_parser
 			if entry_port not in mac_table.values():
 				for mac, port in mac_table.items():
 					actions = [parser.OFPActionOutput(entry_port)]
-					match = parser.OFPMatch(in_port, eth_dst=entry_mac)
+					match = parser.OFPMatch(in_port=port, eth_dst=entry_mac)
 					self.add_flow(datapath, 1, match, actions)
-
 					actions = [parser.OFPActionOutput(port)]
 					match = parser.OFPMatch(in_port=entry_port, eth_dst=mac)
 					self.add_flow(datapath, 1, match, actions)
@@ -72,15 +71,16 @@ class SimpleSwitchController(ControllerBase):
 	def put_mac_table(self, req, **kwargs):
 
 		simple_switch = self.simple_switch_app
-		dpid = dpid_lib.str_to_dpid(lwargs['dpid'])
+		dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
 		new_entry = eval(req.body)
 
 		if dpid not in simple_switch.mac_to_port:
-			returm Response(status=404)
+			return Response(status=404)
 
 		try:
 			mac_table = simple_switch.set_mac_to_port(dpid, new_entry)
 			body = json.dumps(mac_table)
 			return Response(content_type='application/json', body=body)
 		except Exception as e:
+			print(e)
 			return Response(status=500)
