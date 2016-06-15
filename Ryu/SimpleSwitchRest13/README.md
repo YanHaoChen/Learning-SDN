@@ -4,7 +4,7 @@
 
 * 將 Switch 結合 Restful API 的機制。
 * 本程式將會由兩個 class 完成。一個是 Switch 本身，另一個是 Controller 的部分。
-* 分別使用到的 Restful 方法為```GET```（取得資料列表）及```PUT```（新增資料）。
+* 分別使用到的 Restful 方法為```GET```（取得資料列表）及```PUT```（新增 Entry）。
 
 接下來，就從程式碼開始說明。
 
@@ -67,6 +67,43 @@ Restful API 對應的 URL。
 
 ## Switch class
 接下來說明，專案中 Switch 的部分。
+
+### 初始化
+繼承```simple_switch_13.SimpleSwitch13```，實現 Switch 的基本功能。
+
+```python
+class SimpleSwitchRest13(simple_switch_13.SimpleSwitch13):
+	_CONTEXTS = {'wsgi':WSGIApplication}
+
+	def __init__(self, *args, **kwargs):
+		super(SimpleSwitchRest13, self).__init__(*args, **kwargs)
+		self.switches = {}
+		wsgi = kwargs['wsgi']
+		wsgi.register(SimpleSwitchController, {simple_switch_instance_name : self})
+```
+#### \_CONTEXTS = {'wsgi':WSGIApplication}
+變數```_CONTEXTS```為類別變數。在此將 Ryu 中的 WSGI 所運用的模式，定義成```WSGIApplication```。
+
+> 在執行此專案的時候，注意一下 console output。可以看見：
+> 
+> ```shell
+> #...
+> creating context wsgi
+> #...
+> ```
+> wsgi 將在此時被建立。在初始化時（init），由```kwargs```接收。
+
+#### self.switches = {}
+建立字典，用來存放 Datapath。```key```為 Datapath 的 ID。
+
+#### wsgi = kwargs['wsgi']
+取出 wsgi，並將 Controller（```SimpleSwitchController```） 註冊其中。
+
+```python
+wsgi.register(SimpleSwitchController, {simple_switch_instance_name : self})
+```
+
+> ```register```的第二個參數是一個字典，用意就是把 Switch 本身傳給 Controller。讓 Controller 可以自由取用 Switch。 
 
 ## 參考
 
