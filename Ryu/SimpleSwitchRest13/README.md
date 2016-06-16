@@ -286,10 +286,8 @@ ryu-manager --verbose ./SimpleSwitchRest13.py
 $ ryu-manager --verbose SimpleSwitchRest13.py
 loading app SimpleSwitchRest13.py
 loading app ryu.controller.ofp_handler
-creating context test
 creating context wsgi
 instantiating app SimpleSwitchRest13.py of SimpleSwitchRest13
-<ryu.app.wsgi.WSGIApplication object at 0x7fecd446ec10>
 instantiating app ryu.controller.ofp_handler of OFPHandler
 BRICK SimpleSwitchRest13
   CONSUMES EventOFPSwitchFeatures
