@@ -60,9 +60,9 @@ move onto config mode
 ```
 http://<server>:8080/trafficmonitor/portstat
 ```
-> 可透過 wget 取得，方法如下：
+> 可透過 curl 取得，方法如下：
 > ```
-> wget -X GET http://<server>:8080/trafficmonitor/portstat
+> curl -X GET http://<server>:8080/trafficmonitor/portstat
 > ```
 
 #### 回傳資料
@@ -157,9 +157,9 @@ http://<server>:8080/trafficmonitor/portstat
 ```
 http://<server>:8080/trafficmonitor/flowstat
 ```
-> 可透過 wget 取得，方法如下：
+> 可透過 curl 取得，方法如下：
 > ```
-> w	get -X GET http://<server>:8080/trafficmonitor/flowstat
+> curl -X GET http://<server>:8080/trafficmonitor/flowstat
 > ```
 
 #### 回傳資料
