@@ -65,7 +65,7 @@ WSGI 本身為 Python 中 Web Application 的框架。在 Ryu 中，透過它，
 
 Restful API 對應的 URL。
 
-## Switch class
+## Switch Class
 接下來說明，專案中 Switch 的部分。
 
 ### 初始化
@@ -105,6 +105,70 @@ wsgi.register(SimpleSwitchController, {simple_switch_instance_name : self})
 
 > ```register```的第二個參數是一個字典，用意就是把 Switch 本身傳給 Controller。讓 Controller 可以自由取用 Switch。 
 
+### SwitchFeatures 事件
+覆寫```switch_features_handler```，目的是將接收到的 Datapath 存入 ```self.switches``` 供後續使用。
+```python
+@set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
+	def switch_features_handler(self, ev):
+		super(SimpleSwitchRest13, self).switch_features_handler(ev)
+		datapath = ev.msg.datapath
+		self.switches[datapath.id] = datapath
+		self.mac_to_port.setdefault(datapath.id, {})
+```
+
+### 加入 新的設備資訊函式
+接收到新的設備資訊（```entry```）後，將 Entry 新增入 MAC TABLE 中。
+> 接收到 Restful ```PUT```時，控制函式將會呼叫此函式，並給予設備資訊（```entry```）和 Datapath ID，供此函式新增 Flow Entry 入指定的 Datapath 中。
+
+```python
+def set_mac_to_port(self, dpid, entry):
+		mac_table = self.mac_to_port.setdefault(dpid, {})
+		datapath = self.switches.get(dpid)
+
+		entry_port = entry['port']
+		entry_mac = entry['mac']
+		if datapath is not None:
+			parser = datapath.ofproto_parser
+			if entry_port not in mac_table.values():
+				for mac, port in mac_table.items():
+					actions = [parser.OFPActionOutput(entry_port)]
+					match = parser.OFPMatch(in_port=port, eth_dst=entry_mac)
+					self.add_flow(datapath, 1, match, actions)
+					
+					actions = [parser.OFPActionOutput(port)]
+					match = parser.OFPMatch(in_port=entry_port, eth_dst=mac)
+					self.add_flow(datapath, 1, match, actions)
+				mac_table.update({entry_mac : entry_port})
+
+		return mac_table
+```
+#### 取得 MAC TABLE 及指定 Datapath 資訊
+```python
+mac_table = self.mac_to_port.setdefault(dpid, {})
+datapath = self.switches.get(dpid)
+```
+
+#### 如果指定的 Datapath 存在，且此筆設備資訊（```entry```）是新的。則將它加入 MAC TABLE 中
+加入新的設備資訊（```entry```）及原先 MAC TABLE 中的設備資訊之間的 Flow Entry。
+
+```python
+# from known device to new device
+actions = [parser.OFPActionOutput(entry_port)]
+match = parser.OFPMatch(in_port=port, eth_dst=entry_mac)
+self.add_flow(datapath, 1, match, actions)
+
+# from new device to known device
+actions = [parser.OFPActionOutput(port)]
+match = parser.OFPMatch(in_port=entry_port, eth_dst=mac)
+self.add_flow(datapath, 1, match, actions)
+```
+#### 更新 MAC TABLE 並回傳
+```python
+    mac_table.update({entry_mac : entry_port})
+return mac_table
+```
+## Controller Class
+接下來說明，專案中 Controller 的部分。
 ## 參考
 
 [Ryubook](https://osrg.github.io/ryu-book/zh_tw/html/)
