@@ -12,7 +12,7 @@ from webob import Response
 import json
 import logging
 
-Traffic_Monitor_instance_name = 'traffic_monitor_api_app'
+traffic_monitor_instance_name = 'traffic_monitor_api_app'
 
 portStatUrl = '/trafficmonitor/portstat'
 flowStatUrl = '/trafficmonitor/flowstat'
@@ -26,7 +26,7 @@ class TrafficMonitorRest13(simple_switch_13.SimpleSwitch13):
 		self.portStat = None
 		self.monitor_thread = hub.spawn(self._monitor)
 		wsgi = kwargs['wsgi']
-		wsgi.register(TrafficMonitorController,{Traffic_Monitor_instance_name: self})
+		wsgi.register(TrafficMonitorController,{traffic_monitor_instance_name: self})
 
 	@set_ev_cls(ofp_event.EventOFPStateChange,[MAIN_DISPATCHER, DEAD_DISPATCHER])
 	def _state_change_handler(self, ev):
@@ -69,7 +69,7 @@ class TrafficMonitorController(ControllerBase):
 
 	def __init__(self, req, link, data, **config):
 		super(TrafficMonitorController, self).__init__(req, link, data, **config)
-		self.simple_switch_app = data[Traffic_Monitor_instance_name]
+		self.simple_switch_app = data[traffic_monitor_instance_name]
 
 	@route('trafficmonitor', portStatUrl, methods=['GET'])
 	def list_Port_Stat(self, req, **kwargs):
