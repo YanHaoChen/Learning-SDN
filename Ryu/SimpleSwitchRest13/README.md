@@ -4,7 +4,7 @@
 
 * 將 Switch 結合 Restful API 的機制。
 * 本程式將會由兩個 class 完成。一個是 Switch 本身，另一個是 Controller 的部分。
-* 分別使用到的 Restful 方法為```GET```（取得資料列表）及```PUT```（新增 Entry）。
+* 分別使用到的 Restful 方法為```GET```（取得指定 Datapath 的 MAC TABLE 列表）及```PUT```（新增 Flow Entry）。
 
 接下來，就從程式碼開始說明。
 
@@ -205,7 +205,7 @@ class SimpleSwitchController(ControllerBase):
 
 		return Response(content_type='application/json', body=body)
 ```
-### route 裝飾器
+#### route 裝飾器
 
 藉由收到不同的 Restful method（```method```）及參數（```requirements```），執行對應的動作。
 
@@ -217,6 +217,127 @@ class SimpleSwitchController(ControllerBase):
 4. ```requirements```：指定的 URL 參數格式（預設為```None```）
 
 > 在此函式中，```requirements```所接受到的參數為```{'dpid':dpid_lib.DPID_PATTERN}```。其中```dpid_lib.DPID_PATTERN```是參數格式的定義。
+
+#### 取出 Switch 及取出透過```GET```傳入的```dpid```
+
+```python
+simple_switch = self.simple_switch_app
+dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
+```
+
+#### 回傳訊息邏輯
+如果指定的 Datapath 不在 Switch 的紀錄中（```mac_to_port```），則回傳 ```http 404```。
+如果存在，則將指定的 Datapath 的 MAC TABLE 轉換成```json```格式，並透過```Response```函式回傳。
+
+```python
+if dpid not in simple_switch.mac_to_port:
+    return Response(status=404)
+
+mac_table = simple_switch.mac_to_port.get(dpid, {})
+body = json.dumps(mac_table)
+
+return Response(content_type='application/json', body=body)
+```
+
+### 對指定的 Datapath 新增 Flow Entry（PUT）
+讓使用者可以使用```PUT```，傳入將設備資訊，並對指定的 Datapath，新增與此設備連接的 Flow Entry。
+
+```python
+	@route('simpleswitch', url, methods=['PUT'], requirements={'dpid': dpid_lib.DPID_PATTERN})
+	def put_mac_table(self, req, **kwargs):
+
+		simple_switch = self.simple_switch_app
+		dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
+		new_entry = eval(req.body)
+
+		if dpid not in simple_switch.mac_to_port:
+			return Response(status=404)
+
+		try:
+			mac_table = simple_switch.set_mac_to_port(dpid, new_entry)
+			body = json.dumps(mac_table)
+			return Response(content_type='application/json', body=body)
+		except Exception as e:
+			print(e)
+			return Response(status=500)
+```
+
+#### 取出```PUT```進入函式的參數
+```python
+new_entry = eval(req.body)
+```
+#### 回傳訊息邏輯
+如果指定的 Datapath 不在 Switch 的紀錄中（```mac_to_port```），則回傳 ```http 404```。
+如果存在，則執行 Switch 中的```set_mac_to_port```函式，將設備資訊新增至指定的 Datapath 中。新增成功後，回傳更新後的 MAC TABLE。
+
+## 與設備連接前的準備
+
+* 將要連接的 Bridge 的 protocols 設定為 Openflow 1.3
+
+> 可透過指令```$ ovs-ofctl -O OpenFlow13 dump-flows <Bridge>```進行確認。
+
+## 啟動
+```python
+ryu-manager --verbose ./SimpleSwitchRest13.py
+```
+執行後：
+
+```shell
+$ ryu-manager --verbose SimpleSwitchRest13.py
+loading app SimpleSwitchRest13.py
+loading app ryu.controller.ofp_handler
+creating context test
+creating context wsgi
+instantiating app SimpleSwitchRest13.py of SimpleSwitchRest13
+<ryu.app.wsgi.WSGIApplication object at 0x7fecd446ec10>
+instantiating app ryu.controller.ofp_handler of OFPHandler
+BRICK SimpleSwitchRest13
+  CONSUMES EventOFPSwitchFeatures
+  CONSUMES EventOFPPacketIn
+BRICK ofp_event
+  PROVIDES EventOFPSwitchFeatures TO {'SimpleSwitchRest13': set(['config'])}
+  PROVIDES EventOFPPacketIn TO {'SimpleSwitchRest13': set(['main'])}
+  CONSUMES EventOFPPortDescStatsReply
+  CONSUMES EventOFPHello
+  CONSUMES EventOFPErrorMsg
+  CONSUMES EventOFPEchoRequest
+  CONSUMES EventOFPEchoReply
+  CONSUMES EventOFPSwitchFeatures
+(1225) wsgi starting up on http://0.0.0.0:8080
+connected socket:<eventlet.greenio.base.GreenSocket object at 0x7fecd441a110> address:('192.168.99.100', 50609)
+hello ev <ryu.controller.ofp_event.EventOFPHello object at 0x7fecd441ab90>
+move onto config mode
+EVENT ofp_event->SimpleSwitchRest13 EventOFPSwitchFeatures
+switch features ev version=0x4,msg_type=0x6,msg_len=0x20,xid=0xa0209c3,OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
+move onto main mode
+```
+其中，可以見到```(1225) wsgi starting up on http://0.0.0.0:8080```。代表已經在 local 端的 8080 port 上開啟服務，Restful 也就是透過這個 port 提供。
+
+## 提供的 API
+* 取得指定 Datapath 的 MAC TABLE 資訊（GET）
+* 對指定的 Datapath 新增 Flow Entry（PUT）
+
+這兩隻 API 回傳的資料格式皆為```json```。
+
+### 取得指定 Datapath 的 MAC TABLE 資訊（GET）
+```
+http://<server>:8080/simpleswitch/mactable/<Datapath ID>
+```
+> 可透過 curl 取得，方法如下：
+> ```
+> $ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/<Datapath ID>
+> ```
+
+### 對指定的 Datapath 新增 Flow Entry（PUT）
+```
+http://<server>:8080/simpleswitch/mactable/<Datapath ID>
+```
+
+
+> 可透過 curl 執行，方法如下：
+> ```
+> $ curl -X PUT -d '{"mac" : <mac address>, "port" : <port number>}' http://<server>:8080/simpleswitch/mactable/<Datapath ID>
+> ```
 
 ## 參考
 
