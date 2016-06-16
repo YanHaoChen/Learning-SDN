@@ -32,7 +32,7 @@ url = '/simpleswitch/mactable/{dpid}'
 
 ### simple\_switch\_13
 
-Ryu 中 Switch 的雛形。在此專案中，藉由繼承，實現 Switch 的基本功能。 
+Ryu 中 Switch 的雛形。在此專案中，藉由繼承，實現 Switch 的基本功能。 
 
 ### ofp_event
 
