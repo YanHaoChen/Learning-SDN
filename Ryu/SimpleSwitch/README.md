@@ -27,7 +27,7 @@ from ryu.lib.packet import ethernet
 * HANDSHAKE\_DISPATCHER：交換 HELLO 訊息 //在此沒有用到
 
 #### set\_ev\_cls
-當裝飾器使用。因 Ryu 皆受到任何一個 OpenFlow 的訊息，都會需要產生一個對應的事件。為了達到這樣的目的，透過 set\_ev\_cls 當裝飾器，依接收到的參數（事件類別、 Switch 狀態），而進行反應。
+當裝飾器使用。因 Ryu 接受到任何一個 OpenFlow 的訊息，都會需要產生一個對應的事件。為了達到這樣的目的，透過 set\_ev\_cls 當裝飾器，依接收到的參數（事件類別、 Switch 狀態），而進行反應。
 
 #### ofproto\_v1\_3
 使用的 OpenFlow 版本1.3。
