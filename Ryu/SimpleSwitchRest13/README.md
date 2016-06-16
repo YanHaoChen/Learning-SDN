@@ -23,6 +23,8 @@ from ryu.app.wsgi import ControllerBase, WSGIApplication, route
 
 simple_switch_instance_name = 'simple_switch_api_app'
 url = '/simpleswitch/mactable/{dpid}'
+
+#...
 ```
 
 ### import json
@@ -80,6 +82,7 @@ class SimpleSwitchRest13(simple_switch_13.SimpleSwitch13):
 		self.switches = {}
 		wsgi = kwargs['wsgi']
 		wsgi.register(SimpleSwitchController, {simple_switch_instance_name : self})
+#...
 ```
 #### \_CONTEXTS = {'wsgi':WSGIApplication}
 變數```_CONTEXTS```為類別變數。在此將 Ryu 中的 WSGI 所運用的模式，定義成```WSGIApplication```。
@@ -116,11 +119,12 @@ wsgi.register(SimpleSwitchController, {simple_switch_instance_name : self})
 		self.mac_to_port.setdefault(datapath.id, {})
 ```
 
-### 加入 新的設備資訊函式
+### 加入 新增 Flow Entry 函式
 接收到新的設備資訊（```entry```）後，將 Entry 新增入 MAC TABLE 中。
 > 接收到 Restful ```PUT```時，控制函式將會呼叫此函式，並給予設備資訊（```entry```）和 Datapath ID，供此函式新增 Flow Entry 入指定的 Datapath 中。
 
 ```python
+#...
 def set_mac_to_port(self, dpid, entry):
 		mac_table = self.mac_to_port.setdefault(dpid, {})
 		datapath = self.switches.get(dpid)
@@ -141,6 +145,7 @@ def set_mac_to_port(self, dpid, entry):
 				mac_table.update({entry_mac : entry_port})
 
 		return mac_table
+#...
 ```
 #### 取得 MAC TABLE 及指定 Datapath 資訊
 ```python
@@ -169,6 +174,50 @@ return mac_table
 ```
 ## Controller Class
 接下來說明，專案中 Controller 的部分。
+
+### 初始化
+繼承 WSGI 中的 ```ControllerBase```，並取出 Switch，放入```self.simple_switch_app```中。
+
+```python
+#...
+class SimpleSwitchController(ControllerBase):
+
+	def __init__(self, req, link, data, **config):
+		super(SimpleSwitchController, self).__init__(req, link, data, **config)
+		self.simple_switch_app = data[simple_switch_instance_name]
+#...
+```
+
+### 取得指定 Datapath 的 MAC TABLE 資訊（GET）
+透過裝飾器```route```，實現 Restful 機制。讓使用者可以使用```GET```，取得指定 Datapath 的 MAC TABLE 資訊。
+
+```python
+	@route('simpleswitch', url, methods=['GET'], requirements={'dpid':dpid_lib.DPID_PATTERN})
+	def list_mac_table(self, req, **kwargs):
+		simple_switch = self.simple_switch_app
+		dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
+
+		if dpid not in simple_switch.mac_to_port:
+			return Response(status=404)
+
+		mac_table = simple_switch.mac_to_port.get(dpid, {})
+		body = json.dumps(mac_table)
+
+		return Response(content_type='application/json', body=body)
+```
+### route 裝飾器
+
+藉由收到不同的 Restful method（```method```）及參數（```requirements```），執行對應的動作。
+
+參數意義如下：
+
+1. ```name```：名稱（可任意輸入）
+2. ```path```：此函式對應的 URL
+3. ```method```：Restful 對應的方法（預設為```None```）
+4. ```requirements```：指定的 URL 參數格式（預設為```None```）
+
+> 在此函式中，```requirements```所接受到的參數為```{'dpid':dpid_lib.DPID_PATTERN}```。其中```dpid_lib.DPID_PATTERN```是參數格式的定義。
+
 ## 參考
 
 [Ryubook](https://osrg.github.io/ryu-book/zh_tw/html/)
