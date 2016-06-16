@@ -277,7 +277,7 @@ new_entry = eval(req.body)
 > 可透過指令```$ ovs-ofctl -O OpenFlow13 dump-flows <Bridge>```進行確認。
 
 ## 啟動
-```python
+```shell
 ryu-manager --verbose ./SimpleSwitchRest13.py
 ```
 執行後：
