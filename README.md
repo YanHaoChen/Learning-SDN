@@ -7,11 +7,12 @@
 * [安裝 Ryu](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/Install)
 * [Mininet 連接 Ryu](https://github.com/imac-cloud/SDN-tutorial/tree/master/MininetConnectRyu)
 
-## 建立 Controller 
-* [實現一個基本的 Switch（Ryu）](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/SimpleSwitch)
-* [Traffic Monitor（Ryu）](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/TrafficMonitor)
-* [Switch 結合 Restful API（Ryu）](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/SimpleSwitchRest13)
-* [Traffic Monitor 結合 Restful API (Ryu)](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/TrafficMonitorRest13)
+## 建立 Controller（Ryu）
+* [實現一個基本的 Switch](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/SimpleSwitch)
+* [Traffic Monitor](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/TrafficMonitor)
+* [Switch 結合 Restful API](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/SimpleSwitchRest13)
+* [Traffic Monitor 結合 Restful API](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/TrafficMonitorRest13)
+* [實現網路聚合（準備中）]()
 
 ## 實際操作
 
@@ -28,3 +29,5 @@
 ## 硬體設備
 * Pica8 P-3297
 
+## 參考
+* [Ryubook](https://osrg.github.io/ryu/resources.html)
