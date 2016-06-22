@@ -20,7 +20,8 @@ class SimpleSwitchLACP13(app_manager.RyuApp):
 	@set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
 	def switch_features_handler(self, ev):
 		datapath = ev.msg.datapath
-		ofproto = datapath.ofproto_parser
+		ofproto = datapath.ofproto
+		parser = datapath.ofproto_parser
 
 		match = parser.OFPMatch()
 		actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,ofproto.OFPCML_NO_BUFFER)]
@@ -30,14 +31,14 @@ class SimpleSwitchLACP13(app_manager.RyuApp):
 		ofproto = datapath.ofproto
 		parser = datapath.ofproto_parser
 
-		inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, action)]
-		mod = parser.OFPFlowMod(datapath=datapath, priority=priority)
+		inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)]
+		mod = parser.OFPFlowMod(datapath=datapath, priority=priority,match=match,instructions=inst)
 		datapath.send_msg(mod)
 
 	def del_flow(self, datapath, match):
 		ofproto = datapath.ofproto
 		parser = datapath.ofproto_parser
-		mod = parser.OPFFlowMod(datapath = datapath,
+		mod = parser.OFPFlowMod(datapath = datapath,
 								command = ofproto.OFPFC_DELETE,
 								out_port = ofproto.OFPP_ANY,
 								out_group = ofproto.OFPG_ANY,
@@ -72,7 +73,7 @@ class SimpleSwitchLACP13(app_manager.RyuApp):
 		actions = [parser.OFPActionOutput(out_port)]
 
 		if out_port != ofproto.OFPP_FLOOD:
-			match = parser.OFPMatch(in_port=in_port, eth_dst=eth_dst)
+			match = parser.OFPMatch(in_port=in_port, eth_dst=dst)
 			self.add_flow(datapath, 1, match, actions)
 
 		data = None
