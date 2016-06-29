@@ -12,7 +12,7 @@
 * [Traffic Monitor](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/TrafficMonitor)
 * [Switch 結合 Restful API](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/SimpleSwitchRest13)
 * [Traffic Monitor 結合 Restful API](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/TrafficMonitorRest13)
-* [實現網路聚合（準備中）]()
+* [實現網路聚合（準備中）](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/LinkAggregation)
 
 ## 實際操作
 
