@@ -73,17 +73,3 @@ rtt min/avg/max/mdev = 4.355/4.355/4.355/0.000 ms
 ```
 
 如果看到以上內容，恭喜你成功寫出一個啟動 Mininet 且控制它的Python！
-
-但如果你看到的是像以下這樣：
-
-```shell
-$ sudo python YourPythonName.py
-ping: bad number of packets to tranmit.
-```
-
-不要灰心的太早，因為只是發生了一點小誤會，請注意你程式內的這段，並改成這樣：
-```python
-print h1.cmd('ping -c2 %s' % h4.IP())
-```
-
-很好，現在應該不會有誤會了。

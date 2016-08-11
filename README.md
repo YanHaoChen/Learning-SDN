@@ -7,6 +7,10 @@
 * [安裝 Ryu](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/Install)
 * [Mininet 連接 Ryu](https://github.com/imac-cloud/SDN-tutorial/tree/master/MininetConnectRyu)
 
+## 操作 Mininet
+
+* [熟悉如何使用 Mininet](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/Walkthrough) (30%)
+
 ## 建立 Controller（Ryu）
 * [實現一個基本的 Switch](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/SimpleSwitch)
 * [Traffic Monitor](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/TrafficMonitor)
