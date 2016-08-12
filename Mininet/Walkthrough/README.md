@@ -160,6 +160,8 @@ For example:
   mininet> h1 ifconfig
 ```
 
+#### ifconfig
+
 例如想觀察```h1```的網路狀況：
 
 ```bash
@@ -199,5 +201,89 @@ mininet> s1 ps -a
  2742 pts/24   00:00:00 controller
  3014 pts/27   00:00:00 ps
 ```
+
+#### ping
+
+接下來則是```ping```。```ping```個人覺得是在網路學習上很基本且很重要的指令。我們可以透過以下方式，讓 Mininet 中的主機```ping```其他也在其中的主機：
+
+```bash
+mininet> h1 ping -c1 h2
+PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
+64 bytes from 10.0.0.2: icmp_seq=1 ttl=64 time=1.77 ms
+
+--- 10.0.0.2 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 1.774/1.774/1.774/0.000 ms
+```
+
+透過```ping```我們也可以瞭解 OpenFlow 在執行上的機制。在傳送```ping```封包時，一開始會查看 ARP table 中有沒有目標主機，在一個區域網路剛建立的時候 ARP table 會是空的，因此在 ARP table 中找不到```10.0.0.2```這台主機，所以會觸發```packet_in```傳送給 controller，controller 收到後，會傳送```packet_out```要求發送廣播封包，進一步找尋目標主機有沒有在管轄範圍內，進而建立起 ARP table。所以再```ping```一次同一台主機，就會發現所需時間由```1.77 ms```降至```5.80 ms```：
+
+```bash
+mininet> h1 ping -c1 h2
+PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
+64 bytes from 10.0.0.2: icmp_seq=1 ttl=64 time=5.80 ms
+
+--- 10.0.0.2 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 5.800/5.800/5.800/0.000 ms
+```
+如在建立實驗環境時，不希望這一開始無法避免的建表（ARP table）過程影響實驗結果，可以先使用```pingall```，把 ARP table 建立好，再進行實驗：
+
+```bash
+mininet> pingall
+*** Ping: testing ping reachability
+h1 -> h2
+h2 -> h1
+*** Results: 0% dropped (2/2 received)
+```
+
+### Mininet 還提供了簡易的 Web Service 測試方式
+
+有時候實驗的狀況可能會需要 Web Service，Mininet 也可以在個別```host```中，快速的建立 Web Service，方法只需要像這樣：
+
+```bash
+mininet> h1 python -m SimpleHTTPServer 80 &
+```
+
+在```h1```上，就在背景執行一個 Web Service 了。接著我們可以讓```h2```跟```h1```的 Web Service 連線看看：
+
+```bash
+mininet> h2 wget -O - h1
+--2016-08-12 22:24:38--  http://10.0.0.1/
+Connecting to 10.0.0.1:80... connected.
+HTTP request sent, awaiting response... 200 OK
+...
+```
+如果要關掉```h1```上的 Web Service 也只需要：
+
+```bash
+mininet> h1 kill %python
+Serving HTTP on 0.0.0.0 port 80 ...
+10.0.0.2 - - [12/Aug/2016 22:24:38] "GET / HTTP/1.1" 200 -
+```
+### 把 Mininet 關掉
+
+你只需要這樣：
+
+```bash
+mininet> exit
+*** Stopping 1 controllers
+c0
+*** Stopping 2 links
+..
+*** Stopping 1 switches
+s1
+*** Stopping 2 hosts
+h1 h2
+*** Done
+completed in 902.280 seconds
+mininet@mininet:~$
+```
+如果 Mininet crash 了，你可以用```-c```把環境清理乾淨：
+
+```bash
+$ sudo mn -c
+```
+
 ## 參考
 [Mininet Walkthrough](http://mininet.org/walkthrough/)
