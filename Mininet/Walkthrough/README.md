@@ -1,4 +1,4 @@
-# 熟悉如何使用 Mininet
+# 熟悉如何使用 Mininet（part 1）
 
 雖然之後用程式碼建立 Mininet 模擬環境的情況比較多，但多熟悉一點 Mininet 的操作方式也不是一件壞事。以下內容是跟著 [Mininet Walkthrough](http://mininet.org/walkthrough/) ，學習使用 Mininet 的過程。
 
