@@ -9,7 +9,8 @@
 
 ## 操作 Mininet
 
-* [熟悉如何使用 Mininet](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/Walkthrough) (30%)
+* [熟悉如何使用 Mininet Part 1](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/Walkthrough)
+* [熟悉如何使用 Mininet Part 2](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/Walkthrough2)
 
 ## 建立 Controller（Ryu）
 * [實現一個基本的 Switch](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/SimpleSwitch)
