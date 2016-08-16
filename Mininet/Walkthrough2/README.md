@@ -81,6 +81,12 @@ h1 h2
 completed in 10.893 seconds
 ```
 
+如果只是單純想測試拓樸是否能運作（不包含連線等功能），可以直接給它```none```。這樣的測試方式，也可當成是此拓樸的基準測試：
+
+```bash
+$ sudo mn --test none
+```
+
 ### 用參數調整拓樸
 
 參數```--topo```可以讓我們鍵入特定的拓樸模式及規格，另外也可以結合```--test```對建立起的拓樸進行測試：
@@ -253,6 +259,69 @@ mininet> xterm h1
 ```
 
 > 請在桌面版的系統上進行這項指令，否則其他主機的 terminal 是無法開啟的。
+
+### 選擇不同的 Switch
+
+Mininet 在建立時，預設使用的 Switch 就是 OVSSwitch。除了 OVSSwitch 還有其他的 Switch 可以供使用者選擇：
+
+```bash
+$ man mn
+...
+--switch=SWITCH
+              default|ivs|lxbr|ovs|ovsbr|ovsk|user[,param=value...]     ovs=OVSSwitch     default=OVSSwitch
+              ovsk=OVSSwitch lxbr=LinuxBridge user=UserSwitch ivs=IVSSwitch ovsbr=OVSBridge
+...
+```
+
+Switch 的選擇，對整體的測試是佔有一定程度的影響的。以下就舉```UserSwitch```跟預設的```OVSSwitch```進行比較：
+
+```bash
+// UserSwitch
+$ sudo mn --switch user --test iperf
+...
+*** Iperf: testing TCP bandwidth between h1 and h2
+.*** Results: ['945 Kbits/sec', '1.01 Mbits/sec']
+...
+
+// OVSSwitch
+$ sudo mn --switch ovsk --test iperf
+...
+*** Iperf: testing TCP bandwidth between h1 and h2
+.*** Results: ['38.6 Gbits/sec', '38.6 Gbits/sec']
+...
+```
+
+測試出來的數據，有很明顯的差異。```UserSwitch```因為還需要額外處理核心與使用者介面的溝通，大幅增加效率上的成本。```UserSwitch```也是會有需要它的時候，但應該不會使用在需要高即時性的狀況下。
+
+### 將 Switch 與 Controller 規劃在同一個 Netwrok Namespace（user switch only）
+
+如果一時間會意不過來是什麼意思，直接執行一次，就可以了解。先來試試沒有這項設定的狀況：
+
+```bash
+$ sudo mn --switch user
+...
+mininet> dump
+<Host h1: h1-eth0:10.0.0.1 pid=2760>
+<Host h2: h2-eth0:10.0.0.2 pid=2762>
+<UserSwitch s1: lo:127.0.0.1,s1-eth1:None,s1-eth2:None pid=2764>
+<Controller c0: 127.0.0.1:6653 pid=2753>
+```
+
+加了```--innanmespace```這項設定後：
+
+```bash
+$ sudo mn --innamespace --switch user
+...
+mininet> dump
+<Host h1: h1-eth0:10.0.0.1 pid=2871>
+<Host h2: h2-eth0:10.0.0.2 pid=2873>
+<UserSwitch s1: s1-eth0:192.168.123.2,s1-eth1:None,s1-eth2:None pid=2875>
+<Controller c0: 192.168.123.1:6653 pid=2864>
+```
+
+現在我們可以觀察出差別了。加入選項```--innamespace```後，Switch 跟 Controller 被分開了，並分配在同一個網段中。
+
+> 在此，設定參數的介紹，就到一個段落！
 
 ## 參考
 
