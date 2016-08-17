@@ -134,7 +134,7 @@ def _packet_in_handler(self, ev):
     dpid = datapath.id
     self.mac_to_port.setdefault(dpid, {})
  
-    self.logger.info(&amp;amp;amp;quot;packet in %s %s %s %s&amp;amp;amp;quot;, dpid, src, dst, in_port)
+    self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
  
     self.mac_to_port[dpid][src] = in_port
     #...   
