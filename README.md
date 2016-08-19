@@ -6,6 +6,7 @@
 * [使用 Mininet，建立虛擬網路環境](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/CreateWorkflow)
 * [安裝 Ryu](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/Install)
 * [Mininet 連接 Ryu](https://github.com/imac-cloud/SDN-tutorial/tree/master/MininetConnectRyu)
+* [使用 Vagrant 建立 Open vSwitch 環境]()（準備中）
 
 ## 操作 Mininet
 
@@ -30,7 +31,9 @@
 
 ## 使用到的套件
 * Mininet（虛擬網路環境）
+* Open vSwitch（虛擬 Switch）
 * Ryu（SDN Controller）
+* Vagrant（建立虛擬系統環境）
 * GtkTerm（連接週邊硬體）
 
 ## 硬體設備
