@@ -6,7 +6,7 @@
 * [使用 Mininet，建立虛擬網路環境](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/CreateWorkflow)
 * [安裝 Ryu](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/Install)
 * [Mininet 連接 Ryu](https://github.com/imac-cloud/SDN-tutorial/tree/master/MininetConnectRyu)
-* [使用 Vagrant 建立 Open vSwitch 環境]()（準備中）
+* [使用 Vagrant 建立 Open vSwitch 環境](https://github.com/imac-cloud/SDN-tutorial/tree/master/OpenvSwitch/Install)
 
 ## 操作 Mininet
 
