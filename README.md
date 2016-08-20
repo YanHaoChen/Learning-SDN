@@ -8,12 +8,15 @@
 * [Mininet 連接 Ryu](https://github.com/imac-cloud/SDN-tutorial/tree/master/MininetConnectRyu)
 * [使用 Vagrant 建立 Open vSwitch 環境](https://github.com/imac-cloud/SDN-tutorial/tree/master/OpenvSwitch/Install)
 
+## 操作 Open vSwitch
+
+* [熟悉如何使用 Open vSwitch](https://github.com/imac-cloud/SDN-tutorial/tree/master/OpenvSwitch/Walkthrough)
+
 ## 操作 Mininet
 
 * [熟悉如何使用 Mininet Part 1](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/Walkthrough)
 * [熟悉如何使用 Mininet Part 2](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/Walkthrough2)
 * [熟悉如何使用 Mininet Part 3](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/Walkthrough3)
-
 
 ## 建立 Controller（Ryu）
 * [實現一個基本的 Switch](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/SimpleSwitch)
