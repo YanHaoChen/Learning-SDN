@@ -163,6 +163,63 @@ NXST_FLOW reply (xid=0x4):
  cookie=0x0, duration=62.599s, table=0, n_packets=0, n_bytes=0, idle_age=62, dl_dst=01:80:c2:00:00:00/ff:ff:ff:ff:ff:f0 actions=drop
 ```
 
+### Testing Table 0
+
+如果我們利用 Open vSwitch 建立一個實體或虛擬的 switch，我們很自然的會想要測試它是否可以正常工作。可以測試網路狀況的工具有很多，像是```ping```、```tcpdump```，甚至是```Scapy```。但這些工具並沒有辦法明確的測試出 Open vSwitch 的狀況是否符合預期。
+
+這時候，如果要想要測試 switch 的狀況，有一個更好的選擇，那就是```ofproto/trace```。接下來將展示這套工具的使用方式：
+
+### EXAMPLE 1
+
+先直接跑一下這項指令看看：
+
+```bash
+$ sudo ovs-appctl ofproto/trace br0 in_port=1,dl_dst=01:80:c2:00:00:10
+```
+跑完後，預計你可以看到這樣的輸出：
+
+```bash
+Flow: metadata=0,in_port=1,vlan_tci=0x0000,dl_src=00:00:00:00:00:00,dl_dst=01:80:c2:00:00:05,dl_type=0x0000
+Rule: table=0 cookie=0 dl_dst=01:80:c2:00:00:00/ff:ff:ff:ff:ff:f0
+OpenFlow actions=drop
+
+Final flow: unchanged
+Relevant fields: skb_priority=0,in_port=1,dl_src=00:00:00:00:00:00/01:00:00:00:00:00,dl_dst=01:80:c2:00:00:00/ff:ff:ff:ff:ff:f0,dl_type=0x0000,nw_frag=no
+Datapath actions: drop
+```
+輸出的意義如下：
+
+* 第一行：為傳入的封包狀況。
+* 第二行：對應到的規則。
+* 第三行：執行的動作。
+
+### EXAMPLE 2
+
+接下來試試看其他封包條件：
+
+```bash
+$ sudo ovs-appctl ofproto/trace br0 in_port,dl_dst=01:80:c2:00:00:10
+```
+
+預期可以看到的輸出：
+
+```bash
+Flow: metadata=0,in_port=1,vlan_tci=0x0000,dl_src=00:00:00:00:00:00,dl_dst=01:80:c2:00:00:10,dl_type=0x0000
+Rule: table=0 cookie=0 priority=0
+OpenFlow actions=resubmit(,1)
+
+       	Resubmitted flow: unchanged
+       	Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       	Resubmitted  odp: drop
+       	No match
+
+Final flow: unchanged
+Relevant fields: skb_priority=0,in_port=1,dl_src=00:00:00:00:00:00/01:00:00:00:00:00,dl_dst=01:80:c2:00:00:10/ff:ff:ff:ff:ff:f0,dl_type=0x0000,nw_frag=no
+Datapath actions: drop
+```
+
+我們可以發現此封包並未 match 到任何我們設定要過濾的情況，因此對應的條件轉向較低優先權的 flow，並對應到```table=0 cookie=0 priority=0```這條規則，將封包```resubmit```至 table 1。但因為我們並未加入 table 1，所以到最後，我們還是將此封包進行```drop```動作。
+
 ## 參考
 
 [Multicast_address（wiki）](https://en.wikipedia.org/wiki/Multicast_address)
