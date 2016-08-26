@@ -16,7 +16,7 @@
 
 ## 環境假設條件
 
-為了透過此篇教學，讓學會  VLAN-capable 及 MAC-learning，我們建立 4 個代表不同情境的 port 進行實際演練，分別為：
+為了透過此篇教學，瞭解 Open vSwitch 中的 VLAN-capable 及 MAC-learning。我們建立 4 個代表不同情境的 port 進行實際演練，分別為：
 
 * p1：所有 VLAN 的主幹，配置在 OpenFlow port 1。
 
@@ -25,7 +25,7 @@
 * p3、p4：皆為 VLAN 30 的 access port，分別配置在 OpenFlow 的
 port 3 及 port 4 上。
 
-關於 switch 的學習，又分別為以下五個階段：
+學習、實作的階段又分別為以下五個：
 
 1. Table 0：Admission control.
 
