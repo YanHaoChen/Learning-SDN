@@ -14,6 +14,30 @@
 
 第二種方式的問題則跟第一種不同。"normal" 行為是被定義的標準，所以在不同廠商的 switch 下，也會產生各自的特性跟如何設定這些特性的差異性問題。另外，第二點，"normal" 行為在 OpenFlow 中運行的效果並不好，因為變成 OpenFlow 需要額外承擔調整自己的行為以符合個別的特性的成本。
 
+## 環境假設條件
+
+為了透過此篇教學，讓學會  VLAN-capable 及 MAC-learning，我們建立 4 個代表不同情境的 port 進行實際演練，分別為：
+
+* p1：所有 VLAN 的主幹，配置在 OpenFlow port 1。
+
+* p2：VLAN 20 的 access port，配置在 OpenFlow port 2。
+
+* p3、p4：皆為 VLAN 30 的 access port，分別配置在 OpenFlow 的
+port 3 及 port 4 上。
+
+關於 switch 的學習，又分別為以下五個階段：
+
+1. Table 0：Admission control.
+
+2. Table 1：VLAN input processing.
+
+3. Table 2：Learn source MAC and VLAN for ingress port.
+
+4. Table 3：Look up learning port for destination MAC and VLAN.
+
+5. Table 4：Output processing.
+
+
 ## Setup（準備中）
 
 首先開啟安裝好 Open vSwitch 的虛擬機，並下達以下指令：
@@ -219,6 +243,121 @@ Datapath actions: drop
 ```
 
 我們可以發現此封包並未 match 到任何我們設定要過濾的情況，因此對應的條件轉向較低優先權的 flow，並對應到```table=0 cookie=0 priority=0```這條規則，將封包```resubmit```至 table 1。但因為我們並未加入 table 1，所以到最後，我們還是將此封包進行```drop```動作。
+
+## Implementing Table 1: VLAN Input Processing
+
+當封包可以到達```Table 1```時，代表此封包已經通過```Table 0```的過濾。```Table 1```的目的就在於過濾已包含 VLAN header 的封包，及幫未包含 VLAN header 的封包標註上我們將要賦予它的 VLAN number，並往下一個階段轉送。
+
+首先，我們先加入最低優先權的 flow。此 flow 的用意就在於「如果沒有符合過濾標準，則將封包丟棄」，也可以說是「預設處理封包的方式為丟棄」：
+
+```bash
+ovs-ofctl add-flow br0 "table=1, priority=0, actions=drop"
+```
+
+因為要將```port p1```當作 VLAN 的主幹，所以不管流入的封包是否有 VLAN hander 或者他是屬於那個 VLAN ，都會將收到的封包往下一階段轉送。因此，我們加入規則：
+
+```bash
+$ sudo ovs-ofctl add-flow br0 \
+"table=1, proirity=99, in_port=1, actions=resubmit(,2)"
+```
+
+其他的 port 我們則是希望將沒有標明 VLAN header 的封包，進行標注 VLAN number，再讓此封包往下一階段轉送：
+
+```bash
+$ sudo ovs-ofctl add-flows br0 - << 'EOF'
+table=1, priority=99, in_port=2, vlan_tci=0, actions=mod_vlan_vid:20, resubmit(,2)
+table=1, priority=99, in_port=3, vlan_tci=0, actions=mod_vlan_vid:30, resubmit(,2)
+table=1, priority=99, in_port=4, vlan_tci=0, actions=mod_vlan_vid:30, resubmit(,2)
+EOF
+```
+
+在這個階段我們並未寫任何關於 match 802.1Q （VLAN）的對應規則，所以只要在這個階段收到含有 VLAN header 資訊的封包，我們則會進行```drop```（除了```port 1```）。
+
+> 設定過濾規則時，也可以使用```vlan_tci=0/0xfff```替換```vlan_tci=0```。
+
+### Testing Table 1
+
+再次利用```ofproto/trace```，測試以上的設定。
+
+### EXAMPLE 1: Packect on Trunk Port
+
+首先，測試主幹```port 1```：
+
+```bash
+$ sudo ovs-appctl ofproto/trace br0 in_port=1,vlan_tci=5
+Flow: metadata=0,in_port=1,vlan_tci=0x0005,dl_src=00:00:00:00:00:00,dl_dst=00:00:00:00:00:00,dl_type=0x0000
+Rule: table=0 cookie=0 priority=0
+OpenFlow actions=resubmit(,1)
+
+       	Resubmitted flow: unchanged
+       	Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       	Resubmitted  odp: drop
+       	Rule: table=1 cookie=0 priority=99,in_port=1
+       	OpenFlow actions=resubmit(,2)
+
+       		Resubmitted flow: unchanged
+       		Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       		Resubmitted  odp: drop
+       		No match
+
+Final flow: unchanged
+Relevant fields: skb_priority=0,in_port=1,dl_src=00:00:00:00:00:00/01:00:00:00:00:00,dl_dst=00:00:00:00:00:00/ff:ff:ff:ff:ff:f0,dl_type=0x0000,nw_frag=no
+Datapath actions: drop
+```
+
+封包就如預期，很順暢的一路從```table 0```轉送到```table 2```（即使包含 VLAN header），但也因為```table 2```尚無規則，所以最後還是被```drop```。 
+
+
+### EXAMPLE 2: Valid Packet on Access Port
+
+接下來，我們將傳送一個預計可以通過過濾的封包（不包含 VLAN header）進入```port 2```進行測試：
+
+```bash
+$ sudo ovs-appctl ofproto/trace br0 in_port=2
+Flow: metadata=0,in_port=2,vlan_tci=0x0000,dl_src=00:00:00:00:00:00,dl_dst=00:00:00:00:00:00,dl_type=0x0000
+Rule: table=0 cookie=0 priority=0
+OpenFlow actions=resubmit(,1)
+
+       	Resubmitted flow: unchanged
+       	Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       	Resubmitted  odp: drop
+       	Rule: table=1 cookie=0 priority=99,in_port=2,vlan_tci=0x0000
+       	OpenFlow actions=mod_vlan_vid:20,resubmit(,2)
+
+       		Resubmitted flow: metadata=0,in_port=2,dl_vlan=20,dl_vlan_pcp=0,dl_src=00:00:00:00:00:00,dl_dst=00:00:00:00:00:00,dl_type=0x0000
+       		Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       		Resubmitted  odp: drop
+       		No match
+
+Final flow: unchanged
+Relevant fields: skb_priority=0,in_port=2,vlan_tci=0x0000,dl_src=00:00:00:00:00:00/01:00:00:00:00:00,dl_dst=00:00:00:00:00:00/ff:ff:ff:ff:ff:f0,dl_type=0x0000,nw_frag=no
+Datapath actions: drop
+```
+
+是照著我們預想的沒錯。從第二個```Resubmitted flow```中，可以觀察到我們已經將封包標註成```VLAN 20```。
+
+### EXAMPLE 3: Invalid Packet on Access Port
+
+接下來，我們將傳送一個預計無法通過過濾的封包（包含 VLAN header）進入```port 2```進行測試：
+
+```bash
+$ sudo ovs-appctl ofproto/trace br0 in_port=2,vlan_tci=5
+Flow: metadata=0,in_port=2,vlan_tci=0x0005,dl_src=00:00:00:00:00:00,dl_dst=00:00:00:00:00:00,dl_type=0x0000
+Rule: table=0 cookie=0 priority=0
+OpenFlow actions=resubmit(,1)
+
+       	Resubmitted flow: unchanged
+       	Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       	Resubmitted  odp: drop
+       	Rule: table=1 cookie=0 priority=0
+       	OpenFlow actions=drop
+
+Final flow: unchanged
+Relevant fields: skb_priority=0,in_port=2,vlan_tci=0x0005,dl_src=00:00:00:00:00:00/01:00:00:00:00:00,dl_dst=00:00:00:00:00:00/ff:ff:ff:ff:ff:f0,dl_type=0x0000,nw_frag=no
+Datapath actions: drop
+```
+
+此封包也在我們的預想範圍內被```drop```了。其對應到的規則```Rule: table=1 cookie=0 priority=0```，也就是我們在```table 1```中，設定的「預設處理方式」(```drop```)。
 
 ## 參考
 
