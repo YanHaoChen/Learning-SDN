@@ -493,6 +493,131 @@ NXST_FLOW reply (xid=0x4):
 
 ### Implementing Table 3: Look Up Destination Port
 
+在這個階段，我們將封包導向```table 10```，讓封包依學習的結果，
+在```register 0```中，記錄此封包需要轉送至哪一個 port。記錄完後，再進一步轉送至```table 4```，進行最後的封包配送。
+
+在此，我們只需要加入一個規則：
+
+```bash
+$ sudo ovs-ofctl add-flow br0 \
+"table=3 priority=50 actions=resumbit(,10), resubmit(,4)"
+```
+
+封包經過```table 10```後，```register 0```只會有兩結果。第一種，找到將要轉送的 port number，並記錄在其中。第二種，則是在```table 10```中，找不到可以```match```的規則，```register 0```中記錄的數值就會為```0```。最後，轉往```table 4```進行最後處理。
+
+> ```register 0```所存放的數值是在下一個階段執行上，很重要的判斷依據。如果不是```0```就可以得知要轉送至哪一個 port。如果是```0```，則代表可能需要進行```flood```。
+
+在此，為了避免群播和廣播封包進入```table 10```中，我們可以在```table 3```加上一層過濾：
+
+```bash
+$ sudo ovs-ofctl add-flow br0 \
+"table=3 priority=99 dl_dst=01:00:00:00:00:00/01:00:00:00:00:00 \
+actions=resubmit(,4)"
+```
+
+> 這層過濾，其實會是多餘的。因爲在```table 0```中就將來源為廣播及群播的封包過濾掉了。所以在```table 10```中，也不會有跟廣播及群播相關的規則存在。
+
+### Testing Table 3
+
+接下來進行 Table 3 的測試。
+
+### EXAMPLE
+
+在此，我們下指令，觸發 Open vSiwtch 進行學習。
+
+```bash
+$ sudo ovs-appctl ofproto/trace br0 in_port=1,dl_vlan=20,dl_src=f0:00:00:00:00:01,dl_dst=90:00:00:00:00:01 -generate
+Flow: metadata=0,in_port=1,dl_vlan=20,dl_vlan_pcp=0,dl_src=f0:00:00:00:00:01,dl_dst=90:00:00:00:00:01,dl_type=0x0000
+Rule: table=0 cookie=0 priority=0
+OpenFlow actions=resubmit(,1)
+
+       	Resubmitted flow: unchanged
+       	Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       	Resubmitted  odp: drop
+       	Rule: table=1 cookie=0 priority=99,in_port=1
+       	OpenFlow actions=resubmit(,2)
+
+       		Resubmitted flow: unchanged
+       		Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       		Resubmitted  odp: drop
+       		Rule: table=2 cookie=0
+       		OpenFlow actions=learn(table=10,NXM_OF_VLAN_TCI[0..11],NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[],load:NXM_OF_IN_PORT[]->NXM_NX_REG0[0..15]),resubmit(,3)
+
+       			Resubmitted flow: unchanged
+       			Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       			Resubmitted  odp: drop
+       			Rule: table=3 cookie=0 priority=50
+       			OpenFlow actions=resubmit(,10),resubmit(,4)
+
+       				Resubmitted flow: unchanged
+       				Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       				Resubmitted  odp: drop
+       				No match
+
+       				Resubmitted flow: unchanged
+       				Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       				Resubmitted  odp: drop
+       				No match
+
+Final flow: unchanged
+Relevant fields: skb_priority=0,in_port=1,vlan_tci=0x0014/0x0fff,dl_src=f0:00:00:00:00:01,dl_dst=90:00:00:00:00:01,dl_type=0x0000,nw_frag=no
+Datapath actions: drop
+```
+從中我們可以發現，在轉往```table 10```後的狀況是```No match```。也就是說，```table 10```中並沒符合```dl_dst=90:00:00:00:00:01```這項條件的規則。
+
+但也因為```f0:00:00:00:00:01```這台主機傳送了這個封包，所以 Open vSwitch 將進行學習，並學習結果記錄在```table 10```中：
+
+```bash
+$ sudo ovs-ofctl dump-flows br0 table=10
+NXST_FLOW reply (xid=0x4):
+ cookie=0x0, duration=2414.851s, table=10, n_packets=0, n_bytes=0, idle_age=2414, vlan_tci=0x0014/0x0fff,dl_dst=f0:00:00:00:00:01 actions=load:0x1->NXM_NX_REG0[0..15]
+...
+```
+
+接下來，我們加入另一個封包，來試試看如果封包要傳送到的主機存在於 learing table 中，會發生什麼事：
+
+```bash
+$ sudo ovs-appctl ofproto/trace br0 in_port=2,dl_src=90:00:00:00:00:01,dl_dst=f0:00:00:00:00:01 -generate
+Flow: metadata=0,in_port=2,vlan_tci=0x0000,dl_src=90:00:00:00:00:01,dl_dst=f0:00:00:00:00:01,dl_type=0x0000
+Rule: table=0 cookie=0 priority=0
+OpenFlow actions=resubmit(,1)
+
+       	Resubmitted flow: unchanged
+       	Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       	Resubmitted  odp: drop
+       	Rule: table=1 cookie=0 priority=99,in_port=2,vlan_tci=0x0000
+       	OpenFlow actions=mod_vlan_vid:20,resubmit(,2)
+
+       		Resubmitted flow: metadata=0,in_port=2,dl_vlan=20,dl_vlan_pcp=0,dl_src=90:00:00:00:00:01,dl_dst=f0:00:00:00:00:01,dl_type=0x0000
+       		Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       		Resubmitted  odp: drop
+       		Rule: table=2 cookie=0
+       		OpenFlow actions=learn(table=10,NXM_OF_VLAN_TCI[0..11],NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[],load:NXM_OF_IN_PORT[]->NXM_NX_REG0[0..15]),resubmit(,3)
+
+       			Resubmitted flow: unchanged
+       			Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       			Resubmitted  odp: drop
+       			Rule: table=3 cookie=0 priority=50
+       			OpenFlow actions=resubmit(,10),resubmit(,4)
+
+       				Resubmitted flow: unchanged
+       				Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       				Resubmitted  odp: drop
+       				Rule: table=10 cookie=0 vlan_tci=0x0014/0x0fff,dl_dst=f0:00:00:00:00:01
+       				OpenFlow actions=load:0x1->NXM_NX_REG0[0..15]
+
+       				Resubmitted flow: reg0=0x1,metadata=0,in_port=2,dl_vlan=20,dl_vlan_pcp=0,dl_src=90:00:00:00:00:01,dl_dst=f0:00:00:00:00:01,dl_type=0x0000
+       				Resubmitted regs: reg0=0x1 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       				Resubmitted  odp: drop
+       				No match
+
+Final flow: unchanged
+Relevant fields: skb_priority=0,in_port=2,vlan_tci=0x0000,dl_src=90:00:00:00:00:01,dl_dst=f0:00:00:00:00:01,dl_type=0x0000,nw_frag=no
+Datapath actions: drop
+```
+
+這次轉送到```table 10```之後，就不再是回應```No match```，而是找到對應的規則，也代表成功的進行學習。另外一點，可以注意的是，之後轉送到```table 4```中，雖然因為```table 4```目前並沒有建立任何規則，而被```drop```，但```Resubmitted regs```的```reg0```已經悄悄地變成```0x1```了。
+
 ## 參考
 
 [Multicast_address（wiki）](https://en.wikipedia.org/wiki/Multicast_address)
