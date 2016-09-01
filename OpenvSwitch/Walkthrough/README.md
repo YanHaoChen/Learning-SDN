@@ -505,7 +505,7 @@ $ sudo ovs-ofctl add-flow br0 \
 
 封包經過```table 10```後，```register 0```只會有兩結果。第一種，找到將要轉送的 port number，並記錄在其中。第二種，則是在```table 10```中，找不到可以```match```的規則，```register 0```中記錄的數值就會為```0```。最後，轉往```table 4```進行最後處理。
 
-> ```register 0```所存放的數值是在下一個階段執行上，很重要的判斷依據。如果不是```0```就可以得知要轉送至哪一個 port。如果是```0```，則代表可能需要進行```flood```。
+> ```register 0```所存放的數值是在下一個階段執行上，很重要的判斷依據。如果不是```0```就可以得知要轉送至哪一個 port。如果是```0```，則代表可能需要進行```flooding```。
 
 在此，為了避免群播和廣播封包進入```table 10```中，我們可以在```table 3```加上一層過濾：
 
@@ -618,7 +618,137 @@ Datapath actions: drop
 
 這次轉送到```table 10```之後，就不再是回應```No match```，而是找到對應的規則，也代表成功的進行學習。另外一點，可以注意的是，之後轉送到```table 4```中，雖然因為```table 4```目前並沒有建立任何規則，而被```drop```，但```Resubmitted regs```的```reg0```已經悄悄地變成```0x1```了。
 
+## Implementing Table 4: Output Processing
+
+在此，就是最後的輸出部分了。輸出的依據，也就像是在```table 3```所提到的，是依據```register 0```所存放的數值所決定（送至指定的 port 或者 進行 flooding）。
+
+首先，配合```reg0```加入符合轉送至主幹的規則：
+
+```bash
+$ sudo ovs-ofctl add-flow br0 "table=4 reg0=1 actions=1"
+```
+
+接下來，是非主幹的部分。在這一部分，在依```reg0```轉送至各別的 access port 前，會先將封包的 VLAN header 去除，再進行轉送。所以規則是這麼下的：
+
+```bash
+$ sudo ovs-ofctl add-flows br0 - << 'EOF'
+table=4 reg0=2 actions=strip_vlan,2
+table=4 reg0=3 actions=strip_vlan,3
+table=4 reg0=4 actions=strip_vlan,4
+EOF
+```
+
+最後，就是遇到未知封包時，對應的 VLAN 要進行```flooding```或者直接丟回主幹的部分：
+
+```bash
+$ sudo ovs-ofctl add-flows br0 - << 'EOF'
+table=4 reg0=0 priority=99 dl_vlan=20 actions=1,strip,2
+table=4 reg0=0 priority=99 dl_vlan=30 actions=1,strip,3,4
+table=4 reg0=0 priority=50 actions=1
+EOF
+```
+> 提醒：我們的規則是建立在 OpenFlow 協定上，所以封包是不會回送到原先送出的 port 上。
+
+### Testing Table 4
+
+接下來，測試我們對```Table 4```設定的規則。
+
+> 以下的測試，雖然```Rule```及```OpenFlow actions```對應上並無問題，但最後```Datapath actions```所輸出的 port number 卻在預想之外。目前對此並不確切了解是為什麼，只能推估是 OVS 認定原環境下的 Interface 已使用了第一個 port 所以自行將 OVS 下的 port ，從第二個 port 開始放置，造成意料之外的結果。
+
+### EXAMPLE 1: Broadcast, Multicast, and Unknown Destination
+
+* 由```port 1```傳入一個廣播封包至```VLAN 30```：
+
+> 在此，希望專注在封包的轉送上，所以並沒有加入```-generate```。下一個部分的測試，會專注於 MAC learning，也才會用到它。
+
+
+```bash
+$ sudo ovs-appctl ofproto/trace br0 in_port=1,dl_dst=ff:ff:ff:ff:ff:ff,dl_vlan=30
+Flow: 
+...
+       				Resubmitted flow: unchanged
+       				Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       				Resubmitted  odp: drop
+       				Rule: table=4 cookie=0 priority=99,reg0=0x0,dl_vlan=30
+       				OpenFlow actions=output:1,strip_vlan,output:3,output:4
+       				skipping output to input port
+
+Final flow: metadata=0,in_port=1,vlan_tci=0x0000,dl_src=00:00:00:00:00:00,dl_dst=ff:ff:ff:ff:ff:ff,dl_type=0x0000
+Relevant fields: skb_priority=0,in_port=1,dl_vlan=30,dl_vlan_pcp=0,dl_src=00:00:00:00:00:00,dl_dst=ff:ff:ff:ff:ff:f0/ff:ff:ff:ff:ff:f0,dl_type=0x0000,nw_frag=no
+Datapath actions: pop_vlan,4,5
+```
+由以上的資訊，可以確定如我們的預期，對```VLAN 30```進行廣播（```OpenFlow actions=output:1,strip_vlan,output:3,output:4```），並略過將封包傳送到來源的動作（```skipping output to input port```）。
+
+* 由```port 3```傳入一個廣播封包：
+
+```bash
+$ sudo ovs-appctl ofproto/trace br0 in_port=3,dl_dst=ff:ff:ff:ff:ff:ff
+Flow: 
+...
+       				Resubmitted flow: unchanged
+       				Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       				Resubmitted  odp: drop
+       				Rule: table=4 cookie=0 priority=99,reg0=0x0,dl_vlan=30
+       				OpenFlow actions=output:1,strip_vlan,output:3,output:4
+       				skipping output to input port
+
+Final flow: metadata=0,in_port=3,vlan_tci=0x0000,dl_src=00:00:00:00:00:00,dl_dst=ff:ff:ff:ff:ff:ff,dl_type=0x0000
+Relevant fields: skb_priority=0,in_port=3,vlan_tci=0x0000,dl_src=00:00:00:00:00:00,dl_dst=ff:ff:ff:ff:ff:f0/ff:ff:ff:ff:ff:f0,dl_type=0x0000,nw_frag=no
+Datapath actions: push_vlan(vid=30,pcp=0),2,pop_vlan,5
+```
+也因為是從 access port 進入，因此與剛剛的測試有些不同。在此，先加上了 VLAN（```push_vlan(vid=30,pcp=0)```），在進行接下來的廣播。
+
+### EXAMPLE 2: MAC Learing
+
+接下來，測試 MAC learing 的成果。在此，把```port 1```當成主機```10:00:00:00:00:01```，並將封包傳送至主機```20:00:00:00:00:01```，讓 OVS 進行學習：
+
+```bash
+$ sudo ovs-appctl ofproto/trace br0 in_port=1,dl_vlan=30,dl_src=10:00:00:00:00:01,dl_dst=20:00:00:00:00:01 -generate
+Flow: 
+...
+       				Resubmitted flow: unchanged
+       				Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       				Resubmitted  odp: drop
+       				Rule: table=4 cookie=0 priority=99,reg0=0x0,dl_vlan=30
+       				OpenFlow actions=output:1,strip_vlan,output:3,output:4
+       				skipping output to input port
+
+Final flow: metadata=0,in_port=1,vlan_tci=0x0000,dl_src=10:00:00:00:00:01,dl_dst=20:00:00:00:00:01,dl_type=0x0000
+Relevant fields: skb_priority=0,in_port=1,dl_vlan=30,dl_vlan_pcp=0,dl_src=10:00:00:00:00:01,dl_dst=20:00:00:00:00:01,dl_type=0x0000,nw_frag=no
+Datapath actions: pop_vlan,4,5
+```
+執行的結果跟剛剛很像，因為並未在```table 10```中，找到封包要傳往的主機```10:00:00:00:00:01```，因此進行廣播的動作。
+
+接下來，將```port 4```當成主機```10:00:00:00:00:01```，將封包傳往```20:00:00:00:00:01```：
+
+```bash
+$ sudo ovs-appctl ofproto/trace br0 in_port=4,dl_src=20:00:00:00:00:01,dl_dst=10:00:00:00:00:01 -generate
+Flow: 
+...
+       			OpenFlow actions=resubmit(,10),resubmit(,4)
+
+       				Resubmitted flow: unchanged
+       				Resubmitted regs: reg0=0x0 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       				Resubmitted  odp: drop
+       				Rule: table=10 cookie=0 vlan_tci=0x001e/0x0fff,dl_dst=10:00:00:00:00:01
+       				OpenFlow actions=load:0x1->NXM_NX_REG0[0..15]
+
+       				Resubmitted flow: reg0=0x1,metadata=0,in_port=4,dl_vlan=30,dl_vlan_pcp=0,dl_src=20:00:00:00:00:01,dl_dst=10:00:00:00:00:01,dl_type=0x0000
+       				Resubmitted regs: reg0=0x1 reg1=0x0 reg2=0x0 reg3=0x0 reg4=0x0 reg5=0x0 reg6=0x0 reg7=0x0
+       				Resubmitted  odp: drop
+       				Rule: table=4 cookie=0 reg0=0x1
+       				OpenFlow actions=output:1
+
+Final flow: unchanged
+Relevant fields: skb_priority=0,in_port=4,vlan_tci=0x0000,dl_src=20:00:00:00:00:01,dl_dst=10:00:00:00:00:01,dl_type=0x0000,nw_frag=no
+Datapath actions: push_vlan(vid=30,pcp=0),2
+```
+
+從以上的資訊，我們可以發現學習是成功的。在轉往```table 10```後，```match```到規則```Rule: table=10 cookie=0 vlan_tci=0x001e/0x0fff,dl_dst=10:00:00:00:00:01```，也就是上一個封包讓 OVS 所學習到的主機位置，並成功傳送目的主機（```Datapath actions: push_vlan(vid=30,pcp=0),2```）。結束這個測試，也代表了完成 OVS 下的 VLAN 實作方式。
+
 ## 參考
+
+[ovs/Tutorial](https://github.com/openvswitch/ovs/blob/master/tutorial/)
 
 [Multicast_address（wiki）](https://en.wikipedia.org/wiki/Multicast_address)
 
