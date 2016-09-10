@@ -38,7 +38,7 @@ port 3 及 port 4 上。
 5. Table 4：Output processing.
 
 
-## Setup（準備中）
+## Setup
 
 首先開啟安裝好 Open vSwitch 的虛擬機，並下達以下指令：
 
