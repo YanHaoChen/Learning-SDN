@@ -222,7 +222,7 @@ Datapath actions: drop
 接下來試試看其他封包條件：
 
 ```bash
-$ sudo ovs-appctl ofproto/trace br0 in_port,dl_dst=01:80:c2:00:00:10
+$ sudo ovs-appctl ofproto/trace br0 in_port=1,dl_dst=01:80:c2:00:00:10
 ```
 
 預期可以看到的輸出：
