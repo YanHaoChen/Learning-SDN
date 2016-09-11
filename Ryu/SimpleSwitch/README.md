@@ -104,7 +104,7 @@ def switch_features_handler(self, ev):
 #### self.add\_flow(dat…
 夾帶 datapath、優先權（0）、match、actions，到我們自行寫的 add\_flow func 中（等一下文中會進行介紹），並觸發 Packet-In 事件（封包並沒有 match 到任何 Flow Entry 的情況下，就會觸發）。
 
-> Table-miss Flow Entry 的優先權規定為0，也就是最低的優先權。
+> Table-miss Flow Entry 的優先權設定為0，也就是最低的優先權。也因為優先權最低，其實就代表著，同 Table 中的 Flow Entry 都沒有對應到的情況。
 
 ## 加入 Packet-In 事件處理
 ```python
@@ -190,7 +190,7 @@ def add_flow(self, datapath, priority, match, actions):
     datapath.send_msg(mod)
 ```
 #### inst = [parser.OFPInstruct…
-用來定義封包所需要執行的動作。ofproto.OFPIT\_APPLY\_ACTIONS 對 Switch 來說，就是需要立即執行的 action。
+用來定義封包所需要執行的動作。ofproto.OFPIT\_APPLY\_ACTIONS 對 Switch 來說，是指將指定規則對應的動作加入 Table 中，但如 Table 中已有同樣的規則（Match），則保留舊的動作，不覆寫。
 
 > Instruction 是用來定義當封包滿足所規範的 Match 條件時，需要執行的動作。[參考來源](https://osrg.github.io/ryu-book/zh_tw/html/openflow_protocol.html?highlight=instruction)
 
