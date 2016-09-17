@@ -10,13 +10,13 @@ SDN（Software-defined networking，軟體定義網路）是一個相當大的�
 
 在學習的項目上又分為四個部分（依順序排列）：
 
-1. 協定（OpenFlow）
+1. [協定](https://github.com/imac-cloud/SDN-tutorial/tree/master/Protocols/)
 
-2. Switch（Open vSwitch）
+2. Switch
 
-3. 虛擬網路環境（Mininet）
+3. [虛擬網路環境（Mininet）](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/)
 
-4. Controller（RYU）
+4. Controller
 
 
 ## 環境建立
