@@ -16,7 +16,7 @@ SDN（Software-defined networking，軟體定義網路）是一個相當大的�
 
 3. [虛擬網路環境（Mininet）](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/)
 
-4. Controller
+4. [Controller](https://github.com/imac-cloud/SDN-tutorial/tree/master/Controller/)
 
 
 ## 實際設備操作
