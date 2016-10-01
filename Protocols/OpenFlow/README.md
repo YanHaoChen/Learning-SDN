@@ -59,6 +59,10 @@ Switch 與 Controller 之間的通訊。Controller 可以透過此訊息得知�
 
 也就是說，當 Switch 遇到不知道怎麼處理的封包，就會轉送 Controller。在實際的運用上，可以利用此事件，進行未知封包的學習。
 
+### PacketOut
+
+可以直接進行封包轉送。以這種方式送出的封包，會直接進行設定的動作（Action）。在實際用途上，遇到未知封包時，最後處理的方式，可能會透過它來進行封包轉送，例如進行 Flooding，或是將封包導向指定的 port 上。
+
 ## 進階
 
 [使用 OpenFlow 的 Switch 內部運作方式](https://github.com/imac-cloud/SDN-tutorial/tree/master/Protocols/OpenFlow/OpenFlowInSwitch)
