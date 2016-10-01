@@ -44,7 +44,7 @@ datapath.send_msg(mod)
 
 可以發現，要生成一個```OFPFlowMod```（也就是 FlowMod），需要大量的參數，其中也包含了這條規則的 Match 條件及 Action。
 
-> 在 OpenFlow 1.1 後，就將 Action 這個欄位改成 Instruction。但都是用放規則要執行的動作為何。詳細內容，可以參考[此連結](http://flowgrammable.org/sdn/openflow/message-layer/instruction/)。
+> 在 OpenFlow 1.1 後，就將 Action 這個欄位改成 Instruction。但都是用來給定，規則要執行的動作為何。詳細內容，可以參考[此連結](http://flowgrammable.org/sdn/openflow/message-layer/instruction/)。
 
 ### FeatureReq - FeatureRes
 
