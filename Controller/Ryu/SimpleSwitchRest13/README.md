@@ -3,8 +3,10 @@
 在 [Simple Switch](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/SimpleSwitch) 中，已經瞭解了在 Ryu 中，Switch 的基本運作模式。在此，將把這個基本的 Switch 進行擴充，讓它可以更實際、方便的運用。以下爲本章重點：
 
 * 將 Switch 結合 Restful API 的機制。
-* 本程式將會由兩個 class 完成。一個是 Switch 本身，另一個是 Controller 的部分。
-* 分別使用到的 Restful 方法為```GET```（取得指定 Datapath 的 MAC TABLE 列表）及```PUT```（新增 Flow Entry）。
+* 本程式將會由兩個 class 完成：
+	* Switch 本身。
+	* 管理 Restful 的 Controller。
+* 分別使用到的 Restful 方法為```GET```（取得指定 Switch 的 MAC TABLE 列表）及```PUT```（對指定的 Switch 新增規則）。
 
 接下來，就從程式碼開始說明。
 
@@ -38,20 +40,20 @@ Ryu 中 Switch 的雛形。在此專案中，藉由繼承，實現 Switch 的基
 
 引入 Openflow Protocol 的事件。
 
-### ryu.controller 的事件類別名稱
+### Switch 與 Controller 之間的溝通狀況
 
-* CONFIG_DISPATCHER：接收 SwitchFeatures
-* MAIN_DISPATCHER：一般狀態 //在此沒有用到
-* DEAD_DISPATCHER：連線中斷 //在此沒有用到
-* HANDSHAKE_DISPATCHER：交換 HELLO 訊息 //在此沒有用到
+* CONFIG\_DISPATCHER：接收 SwitchFeatures
+* MAIN\_DISPATCHER：一般狀態（交握完畢）
+* DEAD\_DISPATCHER：連線中斷 //在此沒有用到
+* HANDSHAKE\_DISPATCHER：交換 HELLO 訊息 //在此沒有用到
 
 ### set\_ev\_cls
 
-當裝飾器使用。因 Ryu 接受到任何一個 OpenFlow 的訊息，都會需要產生一個對應的事件。為了達到這樣的目的，透過 set\_ev\_cls 當裝飾器，依接收到的參數（事件類別、 Switch 狀態），而進行反應。
+透過 set\_ev\_cls 裝飾器，依接收到的參數（事件類別、 Switch 狀態），而進行反應。
 
 ### dpid as dpid_lib
 
-在此運用其中對 Datapath ID 的規範```DPID_PATTERN```。當接收到 Restful 請求時，過濾 Datapath ID 是否符合格式。
+在此運用其中對 Datapath ID 的規範```DPID_PATTERN```。當接收到 Restful 請求時，可以讓 Ryu 知道參數所對應的數值型態。
 
 ### Response
 
@@ -97,7 +99,7 @@ class SimpleSwitchRest13(simple_switch_13.SimpleSwitch13):
 > wsgi 將在此時被建立。在初始化時（init），由```kwargs```接收。
 
 #### self.switches = {}
-建立字典，用來存放 Datapath。```key```為 Datapath 的 ID。
+建立字典，用來存放 Datapath。```key```為 Switch 的 ID。
 
 #### wsgi = kwargs['wsgi']
 取出 wsgi，並將 Controller（```SimpleSwitchController```） 註冊其中。
@@ -109,7 +111,7 @@ wsgi.register(SimpleSwitchController, {simple_switch_instance_name : self})
 > ```register```的第二個參數是一個字典，用意就是把 Switch 本身傳給 Controller。讓 Controller 可以自由取用 Switch。 
 
 ### SwitchFeatures 事件
-覆寫```switch_features_handler```，目的是將接收到的 Datapath 存入 ```self.switches``` 供後續使用。
+覆寫```switch_features_handler```，目的是將接收到的 Switch 存入 ```self.switches``` 供後續使用。
 ```python
 @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
 	def switch_features_handler(self, ev):
@@ -119,9 +121,9 @@ wsgi.register(SimpleSwitchController, {simple_switch_instance_name : self})
 		self.mac_to_port.setdefault(datapath.id, {})
 ```
 
-### 加入 新增 Flow Entry 函式
-接收到新的設備資訊（```entry```）後，將 Entry 新增入 MAC TABLE 中。
-> 接收到 Restful ```PUT```時，控制函式將會呼叫此函式，並給予設備資訊（```entry```）和 Datapath ID，供此函式新增 Flow Entry 入指定的 Datapath 中。
+### 加入 新增規則函式
+接收到設備資訊後，將設備加入 MAC TABLE 中，並新增規則。
+> 接收到 Restful ```PUT```時，控制函式將會呼叫此函式，並給予設備資訊和 Switch ID，供此函式新增規則入指定的 Switch 中。
 
 ```python
 #...
@@ -147,14 +149,14 @@ def set_mac_to_port(self, dpid, entry):
 		return mac_table
 #...
 ```
-#### 取得 MAC TABLE 及指定 Datapath 資訊
+#### 取得 MAC TABLE 及指定 Switch 資訊
 ```python
 mac_table = self.mac_to_port.setdefault(dpid, {})
 datapath = self.switches.get(dpid)
 ```
 
-#### 如果指定的 Datapath 存在，且此筆設備資訊（```entry```）是新的。則將它加入 MAC TABLE 中
-加入新的設備資訊（```entry```）及原先 MAC TABLE 中的設備資訊之間的 Flow Entry。
+#### 如果指定的 Switch 存在，且此設備是新的。則將它加入 MAC TABLE 中
+加入設備及原先 MAC TABLE 中的設備資訊之間的規則。
 
 ```python
 # from known device to new device
@@ -188,7 +190,7 @@ class SimpleSwitchController(ControllerBase):
 #...
 ```
 
-### 取得指定 Datapath 的 MAC TABLE 資訊（GET）
+### 取得指定 Switch 的 MAC TABLE 列表（GET）
 透過裝飾器```route```，實現 Restful 機制。讓使用者可以使用```GET```，取得指定 Datapath 的 MAC TABLE 資訊。
 
 ```python
@@ -218,7 +220,7 @@ class SimpleSwitchController(ControllerBase):
 
 > 在此函式中，```requirements```所接受到的參數為```{'dpid':dpid_lib.DPID_PATTERN}```。其中```dpid_lib.DPID_PATTERN```是參數格式的定義。
 
-#### 取出 Switch 及取出透過```GET```傳入的```dpid```
+#### 取得指定 Switch
 
 ```python
 simple_switch = self.simple_switch_app
@@ -227,7 +229,7 @@ dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
 
 #### 回傳訊息邏輯
 如果指定的 Datapath 不在 Switch 的紀錄中（```mac_to_port```），則回傳 ```http 404```。
-如果存在，則將指定的 Datapath 的 MAC TABLE 轉換成```json```格式，並透過```Response```函式回傳。
+如果存在，則將指定的 Switch 的 MAC TABLE 轉換成```json```格式，並透過```Response```函式回傳。
 
 ```python
 if dpid not in simple_switch.mac_to_port:
@@ -239,8 +241,8 @@ body = json.dumps(mac_table)
 return Response(content_type='application/json', body=body)
 ```
 
-### 對指定的 Datapath 新增 Flow Entry（PUT）
-讓使用者可以使用```PUT```，傳入將設備資訊，並對指定的 Datapath，新增與此設備連接的 Flow Entry。
+### 對指定的 Switch 新增規則（PUT）
+讓使用者可以使用```PUT```，傳入將設備資訊，並對指定的 Switch，新增與此設備連接的規則。
 
 ```python
 	@route('simpleswitch', url, methods=['PUT'], requirements={'dpid': dpid_lib.DPID_PATTERN})
@@ -266,8 +268,11 @@ return Response(content_type='application/json', body=body)
 ```python
 new_entry = eval(req.body)
 ```
+> 透過 eval，可以將字串直接轉換成對應的格式，例如：字典、陣列。
+
+
 #### 回傳訊息邏輯
-如果指定的 Datapath 不在 Switch 的紀錄中（```mac_to_port```），則回傳 ```http 404```。
+如果指定的 Switch 不在 Switch 的紀錄中（```mac_to_port```），則回傳 ```http 404```。
 如果存在，則執行 Switch 中的```set_mac_to_port```函式，將設備資訊新增至指定的 Datapath 中。新增成功後，回傳更新後的 MAC TABLE。
 
 ## 與設備連接前的準備
@@ -317,7 +322,7 @@ move onto main mode
 
 這兩隻 API 回傳的資料格式皆為```json```。
 
-### 取得指定 Datapath 的 MAC TABLE 資訊（GET）
+### 取得指定 Switch 的 MAC TABLE 列表（GET）
 ```
 http://<server>:8080/simpleswitch/mactable/<Datapath ID>
 ```
@@ -326,7 +331,7 @@ http://<server>:8080/simpleswitch/mactable/<Datapath ID>
 > $ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/<Datapath ID>
 > ```
 
-### 對指定的 Datapath 新增 Flow Entry（PUT）
+### 對指定的 Switch 新增規則（PUT）
 ```
 http://<server>:8080/simpleswitch/mactable/<Datapath ID>
 ```

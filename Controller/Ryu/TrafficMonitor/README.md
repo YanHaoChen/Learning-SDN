@@ -22,14 +22,14 @@ sorted(objects, key= attrgetter('Attribute_A'))
 
 objects 在排序時，就會針對 objects 的```Attribute_A```屬性，進行排序。
 
-### ryu.controller 的事件類別名稱
+### Switch 與 Controller 之間的溝通狀況
 
-* MAIN_DISPATCHER：一般狀態
+* MAIN_DISPATCHER：一般狀態（完成交握）
 * DEAD_DISPATCHER：連線中斷
 
 ### set\_ev\_cls
 
-當裝飾器使用。因 Ryu 接受到任何一個 OpenFlow 的訊息，都會需要產生一個對應的事件。為了達到這樣的目的，透過 set\_ev\_cls 當裝飾器，依接收到的參數（事件類別、Switch 狀態），而進行反應。
+透過 set\_ev\_cls 裝飾器，依接收到的參數（事件類別、Switch 狀態），而進行反應。
 
 ### hub
 在此，用來負責執行緒的工作。Ryubook 中有提到，其本質是使用```eventlet```進行。```eventlet```的```green threads```所擁有的特性，相當適用於網路架構所需的執行緒需求。（並沒有真正使用過，在此不多做介紹，以免誤導）
@@ -50,16 +50,14 @@ class SimpleMonitor(simple_switch_13.SimpleSwitch13):
 
 ### self.datapaths = {}
 
-用來存放監測中的 Datapath 資訊。
-
-> Datapath 在 Ryu 中，指的就是 Switch。
+用來存放監測中的 Switch 資訊。
 
 ### self.monitor\_thread = hub.spawn(self.\_monitor)
 
 將```_monitor```方法放入執行緒中。不斷執行```取得統計狀況請求```。
 
 ## EventOFPStateChange 事件
-在此事件中，我們可以接收到 Datapath 狀態改變的訊息，藉此修改```self.datapath```，讓```self.datapath```只存放正在監控中的 Datapath。
+在此事件中，我們可以接收到 Switch 狀態改變的訊息，藉此修改```self.datapath```，讓```self.datapath```只存放正在運行中的 Switch。
 
 ```python
 #...
@@ -78,13 +76,13 @@ def _state_change_handler(self, ev):
             del self.datapaths[datapath.id]
 #...
 ```
-* 如果狀態是```MAIN_DISPATCHER```且不在```self.datapath```中，則放入```self.datapath```。
+* 如果狀態是```MAIN_DISPATCHER```且不在```self.datapath```中，則放入```self.datapath```。（Switch 連接中）
 
-* 如果狀態是```DEAD_DISPATCHER```且在```self.datapath```中，則從```self.datapath```中移除。
+* 如果狀態是```DEAD_DISPATCHER```且在```self.datapath```中，則從```self.datapath```中移除。（Switch 中斷連結）
 
 ## def \_monitor(self):
 
-每間隔10秒，向監測中的 Datapath 發出```取得統計狀況請求```。
+每間隔10秒，向監測中的 Switch 發出```取得統計狀況請求```。
 
 ```python
 #...
@@ -116,14 +114,14 @@ def _request_stats(self, datapath):
 
 #...
 ```
-* OFPFlowStatsRequest：用來對 Datapath 的 Flow Entry 取得統計的資料。
-* OFPPortStatsRequest：用來取得關於 Datapath 每個 Port 的相關資訊以及統計訊息。 
+* OFPFlowStatsRequest：取得 Switch 中的規則資訊。
+* OFPPortStatsRequest：取得 Switch 中每個 Port 的相關資訊以及統計數據。 
 
 > OFPPortStatsRequest 取的指定 Port 的訊息，這邊使用```ofproto.OFPP_ANY```，代表指定所有的 Port。
 
 ## FlowStatsReply 事件
 
-處理接收到的 Flow 的狀況，並顯示出來。
+處理接收到的規則資訊，並顯示出來。
 
 ```python
 #...
@@ -154,7 +152,7 @@ def _flow_stats_reply_handler(self, ev):
 ```python
 [flow for flow in body if flow.priority == 1]
 ```
-以上程式碼用來產生，將被排序的物件。找尋```body```(為 OFPFlowStats 的列表）內的所有資料，將資料中的 ```flow.priority == 1```的資料納入將要排序的物件中（排除 Table-miss Flow）。
+以上程式碼用來產生，將被排序的物件。找尋```body```(為 OFPFlowStats 的列表）內的所有資料，將資料中的 ```flow.priority == 1```的資料納入將要排序的物件中（排除轉往 Controller 的規則）。
 
 ```python
 lambda flow: (flow.match['in_port'],flow.match['eth_dst'])
@@ -173,7 +171,7 @@ lambda flow: (flow.match['in_port'],flow.match['eth_dst'])
 
 ## PortStatsReply 事件
 
-處理接收到的 Port 的狀況，並顯示出來。
+處理接收到的 Port 的資訊，並顯示出來。
 
 ```python
 #...

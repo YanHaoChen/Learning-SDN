@@ -51,12 +51,12 @@ move onto config mode
 ## 提供的 API
 在此分別提供兩隻 API：
 
-* 取得監控中的設備 Port 的狀況（GET）
-* 取得監控中的設備 Flow 的狀況（GET）
+* 取得監控中 Switch 的 Port 的狀況（GET）
+* 取得監控中 Switch 的規則狀況（GET）
 
 這兩隻 API 回傳的資料格式皆為```json```。
 
-### 取得監控中的設備 Port 的狀況（GET）
+### 取得監控中 Switch 的 Port 的狀況（GET）
 ```
 http://<server>:8080/trafficmonitor/portstat
 ```
@@ -153,7 +153,7 @@ http://<server>:8080/trafficmonitor/portstat
 }
 ```
 
-### 取得監控中的設備 Flow 的狀況（GET）
+### 取得監控中 Switch 的規則狀況（GET）
 ```
 http://<server>:8080/trafficmonitor/flowstat
 ```
