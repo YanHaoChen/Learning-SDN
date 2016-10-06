@@ -1,12 +1,14 @@
 # Simple Switch with Restful
 
-在 [Simple Switch](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/SimpleSwitch) 中，已經瞭解了在 Ryu 中，Switch 的基本運作模式。在此，將把這個基本的 Switch 進行擴充，讓它可以更實際、方便的運用。以下爲本章重點：
+在 [Simple Switch](https://github.com/imac-cloud/SDN-tutorial/tree/master/Controller/Ryu/SimpleSwitch) 中，已經瞭解了在 Ryu 中，Switch 的基本運作模式。在此，將把這個基本的 Switch 進行擴充，讓它可以更實際、方便的運用。以下爲本章重點：
 
 * 將 Switch 結合 Restful API 的機制。
 * 本程式將會由兩個 class 完成：
-	* Switch 本身。
-	* 管理 Restful 的 Controller。
-* 分別使用到的 Restful 方法為```GET```（取得指定 Switch 的 MAC TABLE 列表）及```PUT```（對指定的 Switch 新增規則）。
+	* Switch 本身
+	* 管理 Restful 的 Controller
+* 分別使用到的 Restful 方法為：
+	* ```GET```（取得指定 Switch 的 MAC TABLE 列表）
+	* ```PUT```（對指定的 Switch 新增規則）
 
 接下來，就從程式碼開始說明。
 

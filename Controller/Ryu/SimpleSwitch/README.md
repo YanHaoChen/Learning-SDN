@@ -119,7 +119,7 @@ in_port、pkt、eth、dst、src、dpid。以上都是等一下，運作中會用
 self.mac_to_port.setdefault(dpid, {})
 ``` 
 
-將來原位置的 port number 記錄下來：
+將來源主機的 port number 記錄下來：
 
 ```python
 self.mac_to_port[dpid][src] = in_port
