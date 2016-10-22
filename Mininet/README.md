@@ -6,7 +6,7 @@
 
 * [安裝](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/Install)
 * [入門：Create a Workflow](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/CreateWorkflow)
-* [Mininet 連接 Ryu](https://github.com/imac-cloud/SDN-tutorial/tree/master/MininetConnectRyu)
+* [Mininet 連接 Ryu](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/MininetConnectRyu)
 * [熟悉如何使用 Mininet Part 1](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/Walkthrough)
 * [熟悉如何使用 Mininet Part 2](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/Walkthrough2)
 * [熟悉如何使用 Mininet Part 3](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/Walkthrough3)
