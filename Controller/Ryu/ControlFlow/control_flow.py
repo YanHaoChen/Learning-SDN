@@ -5,6 +5,8 @@ from ryu.controller import ofp_event
 from ryu.controller.handler import MAIN_DISPATCHER
 from ryu.controller.handler import set_ev_cls
 
+from ryu.lib.packet import packet
+from ryu.lib.packet import ethernet
 
 class control_flow (app_manager.RyuApp):
 	OFP_VERSIONS = [ofproto_v1_0.OFP_VERSION]
@@ -44,7 +46,23 @@ class control_flow (app_manager.RyuApp):
 		dp = msg.datapath
 		ofp = dp.ofproto
 		ofp_parser = dp.ofproto_parser
-		
-		actions = [ofp_parser.OFPActionOutput(ofp.OFPP_FLOOD)]
-		out = ofp_parser.OFPacketOut(datapath=dp, buffer_id=msg.buffer_id, in_port=msg.in_port, actions=actions)
-		dp.send_msg(out)
+
+		port = msg.match['in_port']
+
+		## Get the packet and parses it
+		pkt = packet.packet(data=msg.data)
+		# ethernet
+		pkt_ethernet = pkt.get_protocol(ethernet.ethernet)
+
+		if not pkt_ethernet:
+			return
+
+		# Filters LLDP packet
+		if not pkt_ethernet.ethertype == 35020:
+			return
+
+		match = ofp_parser.OFPMatch(eth_dst=pkt_ethernet.src)
+		output_action = ofp_parser.OFPInstructionActions(ofp.OFPIT_APPLY_ACTIONS,
+													[parser.OFPActionOutput(port)])
+		inst = [output_action]
+		self.add_flow(dp, match=match, inst=inst, table=0)
