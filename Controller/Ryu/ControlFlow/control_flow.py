@@ -1,15 +1,15 @@
 from ryu.base import app_manager
-from ryu.ofproto import ofproto_v1_0
+from ryu.ofproto import ofproto_v1_3
 
 from ryu.controller import ofp_event
-from ryu.controller.handler import MAIN_DISPATCHER
+from ryu.controller.handler import MAIN_DISPATCHER, CONFIG_DISPATCHER
 from ryu.controller.handler import set_ev_cls
 
 from ryu.lib.packet import packet
 from ryu.lib.packet import ethernet
 
 class control_flow (app_manager.RyuApp):
-	OFP_VERSIONS = [ofproto_v1_0.OFP_VERSION]
+	OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
 	def __init__(self, *args, **kwargs):
 		super(control_flow, self).__init__(*args, **kwargs)
 		self.switch_table = {}
@@ -18,14 +18,14 @@ class control_flow (app_manager.RyuApp):
 		ofp = dp.ofproto
 		ofp_parser = dp.ofproto_parser
 
-		buffer_id = ofproto.OFP_NO_BUFFER
+		buffer_id = ofp.OFP_NO_BUFFER
 
 		mod = ofp_parser.OFPFlowMod(
-			datapath=dp, cookie=0, cookie_mask=0, table_id,
+			datapath=dp, cookie=0, cookie_mask=0, table_id=table,
 			command=ofp.OFPFC_ADD, idle_timeout=0, hard_timeout=0,
 			priority=priority, buffer_id=buffer_id,
 			out_port=ofp.OFPP_ANY, out_group=ofp.OFPG_ANY,
-			flags=0, match=match, intstructions=inst)
+			flags=0, match=match, instructions=inst)
 
 		dp.send_msg(mod)
 
@@ -41,6 +41,11 @@ class control_flow (app_manager.RyuApp):
 
 		dp.send_msg(mod)
 
+	@set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
+	def switch_features_handler(self, ev):
+		dp = ev.msg.datapath
+		self.switch_table.setdefault(dp.id,{})
+
 	@set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
 	def packet_in_handler(self, ev):
 		msg = ev.msg
@@ -51,7 +56,7 @@ class control_flow (app_manager.RyuApp):
 		port = msg.match['in_port']
 
 		## Get the packet and parses it
-		pkt = packet.packet(data=msg.data)
+		pkt = packet.Packet(data=msg.data)
 		# ethernet
 		pkt_ethernet = pkt.get_protocol(ethernet.ethernet)
 
@@ -59,18 +64,18 @@ class control_flow (app_manager.RyuApp):
 			return
 
 		# Filters LLDP packet
-		if not pkt_ethernet.ethertype == 35020:
+		if pkt_ethernet.ethertype == 35020:
 			return
 
 		match = ofp_parser.OFPMatch(eth_dst=pkt_ethernet.src)
 		intstruction_action = ofp_parser.OFPInstructionActions(ofp.OFPIT_APPLY_ACTIONS,
-													[parser.OFPActionOutput(port)])
+													[ofp_parser.OFPActionOutput(port)])
 		inst = [intstruction_action]
 		self.add_flow(dp, match=match, inst=inst, table=0)
 
-		self.switch_table[datapath.id][pkt_ethernet] = port
+		self.switch_table[dp.id][pkt_ethernet] = port
 
-	@set_ev_cls(ofp_event.EventOFPPortStateChange, MAID_DISPATCHER)
+	@set_ev_cls(ofp_event.EventOFPPortStateChange, MAIN_DISPATCHER)
 	def port_state_change_handler(self, ev):
 		dp = ev.datapath
 		ofp = dp.ofproto
