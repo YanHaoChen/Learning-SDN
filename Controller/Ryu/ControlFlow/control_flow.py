@@ -72,8 +72,11 @@ class control_flow (app_manager.RyuApp):
 													[ofp_parser.OFPActionOutput(port)])
 		inst = [intstruction_action]
 		self.add_flow(dp, match=match, inst=inst, table=0)
-
 		self.switch_table[dp.id][pkt_ethernet] = port
+
+		actions = [ofp_parser.OFPActionOutput(ofp.OFPP_FLOOD)]
+		out =ofp_parser.OFPPacketOut(datapath=dp, buffer_id=msg.buffer_id, in_port=port, actions=actions)
+		dp.send_msg(out)
 
 	@set_ev_cls(ofp_event.EventOFPPortStateChange, MAIN_DISPATCHER)
 	def port_state_change_handler(self, ev):
