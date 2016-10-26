@@ -12,6 +12,7 @@ class control_flow (app_manager.RyuApp):
 	OFP_VERSIONS = [ofproto_v1_0.OFP_VERSION]
 	def __init__(self, *args, **kwargs):
 		super(control_flow, self).__init__(*args, **kwargs)
+		self.switch_table = {}
 
 	def add_flow(self, dp, match=None, inst=[], table=0, priority=32768):
 		ofp = dp.ofproto
@@ -37,7 +38,7 @@ class control_flow (app_manager.RyuApp):
 									out_port=ofp.OFPP_ANY,
 									out_group=ofp.OFPG_ANY,
 									match=match)
-		
+
 		dp.send_msg(mod)
 
 	@set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
@@ -62,7 +63,27 @@ class control_flow (app_manager.RyuApp):
 			return
 
 		match = ofp_parser.OFPMatch(eth_dst=pkt_ethernet.src)
-		output_action = ofp_parser.OFPInstructionActions(ofp.OFPIT_APPLY_ACTIONS,
+		intstruction_action = ofp_parser.OFPInstructionActions(ofp.OFPIT_APPLY_ACTIONS,
 													[parser.OFPActionOutput(port)])
-		inst = [output_action]
+		inst = [intstruction_action]
 		self.add_flow(dp, match=match, inst=inst, table=0)
+
+		self.switch_table[datapath.id][pkt_ethernet] = port
+
+	@set_ev_cls(ofp_event.EventOFPPortStateChange, MAID_DISPATCHER)
+	def port_state_change_handler(self, ev):
+		dp = ev.datapath
+		ofp = dp.ofproto
+		ofp_parser = dp.ofproto_parser
+		change_port = ev.port_no
+
+		del_mac = None
+
+		for host in self.switch_table[dp.id]:
+			if self.switch_table[dp.id][host] == change_port:
+				del_match = parser.OFPMatch(eth_dst=host)
+				self.del_flow(datapath=dp, match=del_match, table=0)
+				break
+
+		if del_mac != None:
+			del self.switch_table[dp.id][del_mac]
