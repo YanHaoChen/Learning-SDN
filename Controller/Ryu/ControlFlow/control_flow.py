@@ -31,7 +31,7 @@ class control_flow (app_manager.RyuApp):
 
 	def del_flow(self, dp, match, table):
 		ofp = dp.ofproto
-		ofp_parser = dp.ofp_parser
+		ofp_parser = dp.ofproto_parser
 
 		mod = ofp_parser.OFPFlowMod(datapath=dp,
 									command=ofp.OFPFC_DELETE,
@@ -72,7 +72,7 @@ class control_flow (app_manager.RyuApp):
 													[ofp_parser.OFPActionOutput(port)])
 		inst = [intstruction_action]
 		self.add_flow(dp, match=match, inst=inst, table=0)
-		self.switch_table[dp.id][pkt_ethernet] = port
+		self.switch_table[dp.id][pkt_ethernet.src] = port
 
 		actions = [ofp_parser.OFPActionOutput(ofp.OFPP_FLOOD)]
 		out =ofp_parser.OFPPacketOut(datapath=dp, buffer_id=msg.buffer_id, in_port=port, actions=actions)
@@ -89,8 +89,8 @@ class control_flow (app_manager.RyuApp):
 
 		for host in self.switch_table[dp.id]:
 			if self.switch_table[dp.id][host] == change_port:
-				del_match = parser.OFPMatch(eth_dst=host)
-				self.del_flow(datapath=dp, match=del_match, table=0)
+				del_match = ofp_parser.OFPMatch(eth_dst=host)
+				self.del_flow(dp=dp, match=del_match, table=0)
 				break
 
 		if del_mac != None:
