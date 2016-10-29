@@ -37,7 +37,8 @@ class control_flow (app_manager.RyuApp):
 									command=ofp.OFPFC_DELETE,
 									out_port=ofp.OFPP_ANY,
 									out_group=ofp.OFPG_ANY,
-									match=match)
+									match=match,
+									table_id=table)
 
 		dp.send_msg(mod)
 
