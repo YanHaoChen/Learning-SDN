@@ -92,7 +92,7 @@ class L2Switch (app_manager.RyuApp):
 
 * ev.msg：代表 Packet-In 傳入的資訊（包含 switch、in\_port\_number 等...）
 * msg.datapath：在 OpenFlow 中，datapath 代表的就是 Switch
-* dp.ofproto、dp.ofproto_parser：取出此 Switch 中，使用的 OpenFlow 協定及Switch 與 Ryu 之間的溝通管道。
+* dp.ofproto、dp.ofproto_parser：取出此 Switch 中，使用的 OpenFlow 協定及 Switch 與 Ryu 之間的溝通管道。
 
 接下來，介紹執行的部分。在接收到 Packet-In 的事件時，我們規劃的動作（Action）是將此封包進行 Flooding，也就是傳往除了 in_port 外的所有 port 上。我們透過```ofp_parser```建立此動作：
 
