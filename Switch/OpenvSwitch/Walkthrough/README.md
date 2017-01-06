@@ -1,14 +1,17 @@
 # 熟悉如何使用 Open vSwitch
 
-為了更瞭解 Open vSwitch 的運作模式，所以照著 [官方的 Tutorial](https://github.com/openvswitch/ovs/blob/master/tutorial/Tutorial.md) 做一遍，進而熟悉 Open vSwitch。在官方文件的開始，提到可以使用```ovs-sandbox```進行學習，但感覺上，開一個虛擬機，直接安裝 Open vSwitch 感覺簡單許多，所以在這個部分並沒有照他的方式做，希望將重點集中在對整體的瞭解及指令的操作上。以下將會介紹官方的教學動機，及實際操作過程。
+為了更瞭解 Open vSwitch 的運作模式，所以照著 [官方的 Tutorial](https://github.com/openvswitch/ovs/blob/master/Documentation/tutorials/ovs-advanced.rst) 做一遍，進而熟悉 Open vSwitch。在官方文件的開始，提到可以使用```ovs-sandbox```進行學習，但感覺上，開一個虛擬機，直接安裝 Open vSwitch 感覺簡單許多，所以在這個部分並沒有照他的方式做，希望將重點集中在對整體的瞭解及指令的操作上。以下將會介紹官方的教學動機，及實際操作過程。
 
 ## 動機（官方文件翻譯）
 
-這份教學是為了展示 Open vSwitch flow tables 的能耐。教學將會實際演練在 VLAN 及 access ports 底下的 MAC-learning。除了 Open vSwitch 本身的功能外，我們還會在此探討由 OpenFlow 所提供的兩種實現 Switch 功能的方式：
+這份教學是為了展示 Open vSwitch flow tables 的能耐。教學將會實作 VLAN 及 MAC-learning。除了 Open vSwitch 本身的功能外，我們還會在此探討由 OpenFlow 所提供的兩種實現 Switch 功能的方式：
 
 1. 用一種被動的方式，讓 OpenFlow 的 Controller 實現 MAC learning。每當有新的 MAC 加入 switch 中，或者 MAC 所使用的 switch port 有所搬移，則交由 Controller 對 flow table 進行調整。
+> 使用 OpenFlow 協定。
 
 2. 使用 "normal" 行為。OpenFlow 將這個行為定義成將封包當做在 "傳統沒有使用 OpenFlow 的 switch" 中傳送。如果一個 flow 使用的是這種行為（normal），其中的封包仍可以在並沒有設定 OpenFlow 的 Switch 中傳送。
+> 當一般的 Switch 使用。
+
 
 每一個方式，都有它的缺陷存在。例如第一種，因為所有的控制都是由 Controller 負責，所以網路的頻寬及延遲成了很需要考量的成本，進一步可以想像 Controller 在控制大量的 switch 時，是相當吃力。也因為全部的控制都仰賴 Controller，所以一旦 Controller 本身出現問題，連帶影響的就是所有被控管的網路。
 
@@ -46,9 +49,12 @@ port 3 及 port 4 上。
 $ sudo ovs-vsctl add-br br0 -- set Bridge br0 fail-mode=secure
 ```
 
-以上指令的意思為：創建一個新的 bridge ```br0```並將```br0```設定為模式 fail-secure。這樣設定的用意，是要讓其 OpenFlow table 一開始就是空的狀況。
+以上指令的意思為：創建一個新的 bridge ```br0```並將```br0```設定為模式 fail-secure。用意是用讓 switch 在沒有連接到 controller 的情況下，也不會直接進入 normal 模式。
 
-> 如果我們不這麼設定，switch 就會在一開始時，加入一個 flow，並以 normal 模式運行（運作方式如動機所提）。
+> 如果我們不這麼設定，switch 就會在一開始時，加入一個 flow，並以 normal 模式運行（運作方式如動機所提）。指令如下：
+> ```
+> ovs-ofctl add-flow <br> action=NORMAL
+> ```
 
 這時候我們可以使用以下指令，確認是否已經將 bridge 建立好了：
 
@@ -75,14 +81,8 @@ do
 done
 ```
 
-> 上面的腳本與官方的有一處差異，也就是多了```type=internal```。如果照著官方的方式，省略```type=internal```，在執行到指令```ovs-ofctl mod-port br0 p$i up```時會發生錯誤：
-> 
-> ```
-> ovs-ofctl: br0: couldn't find port `p1'
-> ovs-ofctl: br0: couldn't find port `p2'
-> ovs-ofctl: br0: couldn't find port `p3'
-> ovs-ofctl: br0: couldn't find port `p4'
-> ```
+> 上面的腳本與官方的有一處差異，也就是多了```type=internal```。官方的方式是用 ovs-sandbox，所以沒有使用```type=internal```。而本篇是直接使用，並不是用 ovs-sandbox，所以需要添加。
+
 
 在完成腳本後，記得開啟執行權限：
 
