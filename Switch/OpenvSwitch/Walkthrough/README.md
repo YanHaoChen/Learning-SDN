@@ -49,7 +49,7 @@ port 3 及 port 4 上。
 $ sudo ovs-vsctl add-br br0 -- set Bridge br0 fail-mode=secure
 ```
 
-以上指令的意思為：創建一個新的 bridge ```br0```並將```br0```設定為模式 fail-secure。用意是用讓 switch 在沒有連接到 controller 的情況下，也不會直接進入 normal 模式。
+以上指令的意思為：創建一個新的 bridge ```br0```並將```br0```設定為模式 fail-secure。用意是讓 switch 在沒有連接到 controller 的情況下，也不會直接進入 normal 模式。
 
 > 如果我們不這麼設定，switch 就會在一開始時，加入一個 flow，並以 normal 模式運行（運作方式如動機所提）。指令如下：
 > ```
