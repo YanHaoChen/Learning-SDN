@@ -65,7 +65,7 @@ Switch 與 Controller 之間的通訊。Controller 可以透過此訊息得知�
 
 ## 進階
 
-[使用 OpenFlow 的 Switch 內部運作方式](https://github.com/imac-cloud/SDN-tutorial/tree/master/Protocols/OpenFlow/OpenFlowInSwitch)
+[使用 OpenFlow 的 Switch 內部運作方式](https://github.com/YanHaoChen/Learning-SDN/tree/master/Protocols/OpenFlow/OpenFlowInSwitch)
 
 ## 參考
 

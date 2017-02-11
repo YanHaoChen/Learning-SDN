@@ -197,7 +197,7 @@ def _port_stats_reply_handler(self, ev):
 在此```body```指的是 OFPPortStats 的資料列表。利用```attrgetter```函式，將```port_no```當成排序條件。
 
 ## 執行
-可以用在 [Mininet 連結 Ryu](https://github.com/imac-cloud/SDN-tutorial/tree/master/MininetConnectRyu) 中的 Mininet 設定方式，將 Mininet 連結 Monitor 連結，並透過操作 Mininet 檢視監控成果。
+可以用在 [Mininet 連結 Ryu](https://github.com/YanHaoChen/Learning-SDN/tree/master/Mininet/MininetConnectRyu) 中的 Mininet 設定方式，將 Mininet 連結 Monitor 連結，並透過操作 Mininet 檢視監控成果。
 
 ```shell
 $ ryu-manager --verbose ./SimpleMonitor.py

@@ -1,6 +1,6 @@
 # Traffic Monitor with Restful
 
-此專案是 [SimpleSwitchRest13](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/SimpleSwitchRest13) 及 [TrafficMonitor](https://github.com/imac-cloud/SDN-tutorial/tree/master/Ryu/TrafficMonitor) 結合在一起的延伸。讓使用者可以透過 Restful 的方式取得 Switch 上，即時的流量統計數據。
+此專案是 [SimpleSwitchRest13](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/Ryu/SimpleSwitchRest13) 及 [TrafficMonitor](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/Ryu/TrafficMonitor) 結合在一起的延伸。讓使用者可以透過 Restful 的方式取得 Switch 上，即時的流量統計數據。
 
 ## 與設備連接前的準備
 

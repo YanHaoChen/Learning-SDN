@@ -10,18 +10,18 @@ SDN（Software-defined networking，軟體定義網路）是一個相當大的�
 
 在學習的項目上又分為四個部分（依順序排列）：
 
-1. [協定](https://github.com/imac-cloud/SDN-tutorial/tree/master/Protocols/)
+1. [協定](https://github.com/YanHaoChen/Learning-SDN/tree/master/Protocols/)
 
-2. [Switch](https://github.com/imac-cloud/SDN-tutorial/tree/master/Switch/)
+2. [Switch](https://github.com/YanHaoChen/Learning-SDN/tree/master/Switch/)
 
-3. [虛擬網路環境（Mininet）](https://github.com/imac-cloud/SDN-tutorial/tree/master/Mininet/)
+3. [虛擬網路環境（Mininet）](https://github.com/YanHaoChen/Learning-SDN/tree/master/tree/master/Mininet/)
 
-4. [Controller](https://github.com/imac-cloud/SDN-tutorial/tree/master/Controller/)
+4. [Controller](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/)
 
 
 ## 實際設備操作
 
-* [Pica8 P-3297 實際操作-連結與模式設定](https://github.com/imac-cloud/SDN-tutorial/tree/master/Pica8-P-3297/ConnectAndSetEnvironment)
+* [Pica8 P-3297 實際操作-連結與模式設定](https://github.com/YanHaoChen/Learning-SDN/tree/master/Pica8-P-3297/ConnectAndSetEnvironment)
 
 ## 使用到的套件
 * Mininet（虛擬網路環境）

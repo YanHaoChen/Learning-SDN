@@ -748,7 +748,7 @@ Datapath actions: push_vlan(vid=30,pcp=0),2
 
 ## 參考
 
-[ovs/Tutorial](https://github.com/openvswitch/ovs/blob/master/tutorial/)
+[ovs/Tutorial](https://github.com/openvswitch/ovs/blob/master/Documentation/tutorials/ovs-advanced.rst)
 
 [Multicast_address（wiki）](https://en.wikipedia.org/wiki/Multicast_address)
 
