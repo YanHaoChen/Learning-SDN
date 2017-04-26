@@ -1,5 +1,5 @@
 # How to Install Mininet
-將 Mininet 安裝在 ubuntu14.04 上，是一件相當簡單的事（曾經想用 docker 建立，但…相信我…那會是一場意義不大的惡夢），且建議使用 Desktop 版，因為在模擬時，可能需要開啟多個終端畫面。Mininet 的官方提供了三種取得的方式及更新方法。在此是直接使用 source 安裝，個人認為是最直接的方式：
+將 Mininet 安裝在 ubuntu14.04 上，是一件相當簡單的事，且建議使用 Desktop 版，因為在模擬時，可能需要開啟多個終端畫面。Mininet 的官方提供了三種取得的方式及更新方法。在此是直接使用 source 安裝，個人認為是最直接的方式：
 
 1. 利用 git 下載 Mininet
 ```shell
