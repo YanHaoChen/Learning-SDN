@@ -14,7 +14,7 @@ SDN（Software-defined networking，軟體定義網路）是一個相當大的�
 
 2. [Switch](https://github.com/YanHaoChen/Learning-SDN/tree/master/Switch/)
 
-3. [虛擬網路環境（Mininet）](https://github.com/YanHaoChen/Learning-SDN/tree/master/tree/master/Mininet/)
+3. [虛擬網路環境（Mininet）](https://github.com/YanHaoChen/Learning-SDN/tree/master/Mininet)
 
 4. [Controller](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/)
 
