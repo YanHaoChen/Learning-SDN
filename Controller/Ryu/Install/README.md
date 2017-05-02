@@ -22,9 +22,8 @@ $ sudo pip install eventlet
 $ sudo pip install routes
 $ sudo pip install webob
 $ sudo pip install paramiko
-
-//pip 並沒有辦法直接取的要求的項目 ovs>=2.6.0.dev0（目前 ovs 最新穩定版本為2.5.0），所以只好自行指定安裝：
-$ sudo pip install https://pypi.python.org/packages/source/o/ovs/ovs-2.6.0.dev0.tar.gz
+$ sudo pip install tinyrpc
+$ sudo pip install ovs
 ```
 
 2. 利用 git 載下 Ryu，並執行安裝
