@@ -3,8 +3,10 @@ Ryu 在 SDN 中負責的是管理部分，也就是 Controller 的角色。Ryu �
 
 ### 學習
 * [安裝](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/Ryu/Install)
-* [建立第一隻 Ryu 程式](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/Ryu/FirstRyuApplication)
+* [建立第一隻 Ryu 程式（模擬一個 Hub）](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/Ryu/FirstRyuApplication)
 * [控制規則](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/Ryu/ControlFlow)
+* [取得拓樸狀況](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/Ryu/GetTopo)
+* [最短路徑規劃](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/Ryu/ShortestPath)
 
 ### 實作
 * [實現一個基本的 Switch](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/Ryu/SimpleSwitch)
