@@ -9,7 +9,7 @@
 Version: 1.3
 
 #### Mininet 拓樸
-[mininet_env.py]()
+[mininet_env.py](https://github.com/YanHaoChen/Learning-SDN/blob/master/Controller/Ryu/ShortestPath/mininet_env.py)
 
 ```
  h1            h2
@@ -51,7 +51,7 @@ def __init__(self, *args, **kwargs):
 ```
 
 * self.topology\_api\_app：供拓樸搜尋用。
-* self.net：初始化 NetworkX
+* self.net：初始化 NetworkX。
 * self.switch\_map：將連線的 Switch 實體儲存下來，供路徑配置使用。
 * self.arp_table：處理 ARP 封包使用的實體位置（MAC）對應表。
 
@@ -77,4 +77,4 @@ def __init__(self, *args, **kwargs):
 
 1. 將連線到的 Switch 實體以`key-value`的方式加入`self.switch_map`中。
 
-2-5. 寫入處理的 ARP 用的預設規則（如目的地位置為`ff:ff:ff:ff:ff:ff`，則轉往 Controller 進行處理）   
+2-5. 寫入處理的 ARP 用的預設規則（如目的地位置為`ff:ff:ff:ff:ff:ff`，則轉往 Controller 進行處理）。
