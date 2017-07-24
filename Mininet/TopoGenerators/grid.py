@@ -8,12 +8,13 @@ DOWN_PORT = 3
 LEFT_PORT = 4
 HOST_PORT = 5
 
-GIRD_NUM = 4
+GIRD_NUM = 5
 
 if '__main__' == __name__:
 	net = Mininet(controller=RemoteController)
 	c0 = net.addController('c0',ip='192.168.99.123', port=6633)
 	switch_map = {}
+	host = net.addHost('host')
 	for i in xrange(1, GIRD_NUM * GIRD_NUM + 1):
 		switch_name = "s%d" % i
 		tmp_switch = net.addSwitch(switch_name, protocols="OpenFlow13")
@@ -24,10 +25,10 @@ if '__main__' == __name__:
 		up_switch = i-GIRD_NUM
 		if up_switch > 0:
 			net.addLink(tmp_switch, switch_map[up_switch], port1=UP_PORT, port2=DOWN_PORT)
-		host_name = "h%d" % i
+		host_ip = "10.0.0.%d/8" % i
 		host_mac = "00:00:00:00:00:%02x" % i
-		tmp_host = net.addHost(host_name, mac=host_mac)
-		net.addLink(tmp_switch, tmp_host, port1=HOST_PORT)
+
+		net.addLink(tmp_switch, host, port1=HOST_PORT, addr2=host_mac, params2={'ip':host_ip})
 
 	net.build()
 	c0.start()
