@@ -18,6 +18,20 @@ SDN（Software-defined networking，軟體定義網路）是一個相當大的�
 
 4. [Controller](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/)
 
+## 初學者入門建議
+
+1. [什麼是 OpenFlow？：SDN 設備間溝通的方式](https://github.com/YanHaoChen/Learning-SDN/tree/master/Protocols/OpenFlow)
+2. [安裝 OVS：為實際執行 OpenFlow 做準備](https://github.com/YanHaoChen/Learning-SDN/tree/master/Switch/OpenvSwitch/InstallwithSourceCode)
+3. [利用 OVS 熟習 OpenFlow：手動當 Controller 的角色](https://github.com/YanHaoChen/Learning-SDN/tree/master/Switch/OpenvSwitch/Walkthrough)
+4. [安裝 Mininet：建立模擬環境，及與 Controller 連結做準備](https://github.com/YanHaoChen/Learning-SDN/tree/master/Mininet/Install)
+5. [熟悉 Mininet：瞭解 Mininet 在做什麼](https://github.com/YanHaoChen/Learning-SDN/tree/master/Mininet/CreateWorkflow)
+6. [以程式碼建立 Mininet 環境：學習虛擬環境連結 Controller 的方式](https://github.com/YanHaoChen/Learning-SDN/tree/master/Mininet/MininetEnvCreate)
+7. [安裝 Ryu Controller：為學習 Controller 做準備](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/Ryu/Install)
+8. [撰寫第一隻 Controller 程式](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/Ryu/FirstRyuApplication)
+9. [學習利用 Controller 規劃轉送邏輯](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/Ryu/ControlFlow)
+10. [比較像樣的路徑配置方式：Shortest Path](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/Ryu/ShortestPath)
+
+> 其餘章節，讀者可以依需求閱讀。每個項目都會有一個目錄（如：[Ryu](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/Ryu)）讀者可以透過目錄，找尋自己有興趣的內容閱讀。
 
 ## 實際設備操作
 
