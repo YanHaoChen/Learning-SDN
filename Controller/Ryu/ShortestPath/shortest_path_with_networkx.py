@@ -67,7 +67,7 @@ class shortest_path(app_manager.RyuApp):
 			print "arp"
 			self.handle_arp(dp, port, pkt_ethernet, pkt_arp)
 			return
-		# forword by shortest path
+		# forwarded by shortest path
 		if not self.net.has_node(pkt_ethernet.src):
 			print "add %s in self.net" % pkt_ethernet.src
 			self.net.add_node(pkt_ethernet.src)
@@ -105,7 +105,6 @@ class shortest_path(app_manager.RyuApp):
 		links_list = get_link(self.topology_api_app, None)
 		links=[(link.src.dpid,link.dst.dpid,{'port':link.src.port_no}) for link in links_list]
 		print links		
-		self.net = nx.DiGraph()
 		self.net.add_nodes_from(switches)
 		self.net.add_edges_from(links)
 
