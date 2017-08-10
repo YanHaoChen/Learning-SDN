@@ -17,5 +17,5 @@
 
 ## 學習操作
 
-* [Cumulus VX 使用入門（登入、控制 Interface 狀態）](https://github.com/YanHaoChen/Learning-SDN/tree/master/Switch/Cumulus/Walkthrough)
+* [Cumulus VX 使用入門（登入、控制 Interface 狀態）](https://github.com/OSE-Lab/Learning-SDN/tree/master/Switch/Cumulus/Walkthrough)
 

@@ -9,7 +9,7 @@
 Version: 1.3
 
 #### Mininet 拓樸
-[mininet_env.py](https://github.com/YanHaoChen/Learning-SDN/blob/master/Controller/Ryu/ShortestPath/mininet_env.py)
+[mininet_env.py](https://github.com/OSE-Lab/Learning-SDN/blob/master/Controller/Ryu/ShortestPath/mininet_env.py)
 
 ```
  h1            h2
@@ -37,7 +37,7 @@ SwitchEnter:
 	取得拓樸，並將節點及連線加入 NetworkX 中
 ```
 
-> 其中有部分程式碼並未介紹，請參照檔案：[shortest\_path\_with\_networkx.py](https://github.com/YanHaoChen/Learning-SDN/blob/master/Controller/Ryu/ShortestPath/shortest_path_with_networkx.py) 
+> 其中有部分程式碼並未介紹，請參照檔案：[shortest\_path\_with\_networkx.py](https://github.com/OSE-Lab/Learning-SDN/blob/master/Controller/Ryu/ShortestPath/shortest_path_with_networkx.py) 
 
 ###  Init
 

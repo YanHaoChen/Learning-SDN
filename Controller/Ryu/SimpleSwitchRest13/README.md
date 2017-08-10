@@ -1,6 +1,6 @@
 # Simple Switch with Restful
 
-在 [Simple Switch](https://github.com/YanHaoChen/Learning-SDN/tree/master/Controller/Ryu/SimpleSwitch) 中，已經瞭解了在 Ryu 中，Switch 的基本運作模式。在此，將把這個基本的 Switch 進行擴充，讓它可以更實際、方便的運用。以下爲本章重點：
+在 [Simple Switch](https://github.com/OSE-Lab/Learning-SDN/tree/master/Controller/Ryu/SimpleSwitch) 中，已經瞭解了在 Ryu 中，Switch 的基本運作模式。在此，將把這個基本的 Switch 進行擴充，讓它可以更實際、方便的運用。以下爲本章重點：
 
 * 將 Switch 結合 Restful API 的機制。
 * 本程式將會由兩個 class 完成：
