@@ -73,7 +73,7 @@ echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | 
 sudo apt-get install oracle-java8-installer oracle-java8-set-default -y
 ```
 
-> 安裝完後，記得在`/etc/environment`這個檔案中，加入`JAVA_HOME`此環境變數。如下：
+> 安裝完後，記得在`/etc/environment`這個檔案中，加入`JAVA_HOME`此環境變數，並重新開機。如下：
 > 
 > ```
 > # 在 /etc/environment 中，加入此行
@@ -84,4 +84,102 @@ sudo apt-get install oracle-java8-installer oracle-java8-set-default -y
 
 ```shell
 $ sudo apt-get install curl
+```
+
+### 開始安裝（單機）
+
+透過以下的安裝步驟，即可安裝好一台 Target machine。
+
+#### 將 ONOS 放在`/opt`目錄下
+
+```shell
+# 確保 opt 目錄是存在的
+$ sudo mkdir /opt
+# 進入 opt 目錄
+$ cd /opt
+```
+
+#### 安裝 ONOS
+
+在此選擇的版本為`1.9.0`，現有的版本可參考 [Release Notes](https://wiki.onosproject.org/display/ONOS/Release+Notes)，再依需求下載。
+
+```shell
+$ sudo wget -c http://downloads.onosproject.org/release/onos-1.9.0.tar.gz
+```
+##### 解壓縮
+```shell
+$ sudo tar xzf onos-1.9.0.tar.gz
+```
+
+##### 重新命名解壓縮後的資料夾名稱
+```shell
+$ sudo mv onos-1.9.0 onos
+```
+
+##### 啟動（確定安裝成功）
+```shell
+$ /opt/onos/bin/onos-service start
+Welcome to Open Network Operating System (ONOS)!
+     ____  _  ______  ____
+    / __ \/ |/ / __ \/ __/
+   / /_/ /    / /_/ /\ \
+   \____/_/|_/\____/___/
+
+Documentation: wiki.onosproject.org
+Tutorials:     tutorials.onosproject.org
+Mailing lists: lists.onosproject.org
+
+Come help out! Find out how at: contribute.onosproject.org
+
+Hit '<tab>' for a list of available commands
+and '[cmd] --help' for help on a specific command.
+Hit '<ctrl-d>' or type 'system:shutdown' or 'logout' to shutdown ONOS.
+```
+
+#### 與 ONOS 互動
+
+有兩種方式可以跟 ONOS 互動，分別為`CLI`及`GUI`。
+
+> 預設帳號密碼為：onos/rocks。想加入新的使用者可以使用`onos\bin`中的`onos-user-password`及`onos-user-key`這兩項工具。
+
+##### CLI
+
+透過 ssh 進入 ONOS CLI 介面：
+
+```shell
+ssh -p 8081 onos@<Target machine IP>
+```
+
+##### GUI
+
+使用瀏覽器，輸入網址：
+
+```shell
+http://<Target machine>:8181/onos/ui/index.html
+```
+
+並輸入帳號密碼即可。
+
+#### 將 ONOS 註冊在作業系統服務中
+
+以下介紹的方式，是屬於 **Ubuntu 16.04 LTS** 的方式。其他 OS 可以參考[原文](https://wiki.onosproject.org/display/ONOS/Running+ONOS+as+a+service)。將 ONOS 註冊在系統服務中的好處在於，如遇到 Crash 等狀況，系統可以依配置檔，重啟服務進一步提高服務運作的穩定。
+
+##### 複製啟動 ONOS 腳本至`init.d`中
+
+```shell
+sudo cp /opt/onos/init/onos.initd /etc/init.d/onos
+```
+
+##### 註冊服務至 Systemd 中
+
+```shell
+sudo cp /opt/onos/init/onos.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable onos
+```
+
+##### 服務控制
+
+```shell
+sudo systemctl {start|stop|status|restart} onos.service
 ```
