@@ -163,6 +163,8 @@ mvn clean install
 登入 GUI -> 點擊左上角三條橫線 -> 選擇 Applications -> 點擊右邊 + 字號 -> 開啟剛剛建立好的 oar 檔 -> 匯入後，點擊箭頭 Activate app.
 ``` 
 
+> 如使用 OpenFlow 協定連接 Controller，請啟動 App:`OpenFlow Provider`。
+
 ### 查看 Console
 
 咦？我們怎麼知道它有沒有說？
