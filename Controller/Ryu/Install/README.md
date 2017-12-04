@@ -18,7 +18,7 @@ $ sudo apt-get install python-pip //安裝 pyhon套件管理器 pip
 $ sudo apt-get install python-greenlet //pip 安裝 greenlet 時有錯誤，只好使用 apt-get 進行安裝
 $ sudo pip install oslo.config
 $ sudo pip install msgpack-python
-$ sudo pip install eventlet
+$ sudo pip install eventlet==0.18.2
 $ sudo pip install routes
 $ sudo pip install webob
 $ sudo pip install paramiko
