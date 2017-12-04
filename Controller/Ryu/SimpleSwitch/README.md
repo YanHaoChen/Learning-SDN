@@ -78,6 +78,8 @@ def switch_features_handler(self, ev):
 #### actions = [parser.OFPActio…
 產生 Action，其動作為將封包傳送至 Controller，且並不使用 Buffer。
 
+> 不使用 Buffer 的意思為：不將封包暫存在 Switch 的 Buffer 上，而是將整個封包直接傳往 Controller 進行處理。
+
 #### self.add\_flow(dat…
 夾帶 datapath、規則的優先權、match、actions，到我們自行撰寫的 add\_flow func 中（等一下文中會進行介紹），將規則加入 Table 0 中。
 
