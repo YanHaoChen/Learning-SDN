@@ -1,11 +1,13 @@
 # Install Open vSwitch with Source Code
 
+> 更新日期：12/2017
+
 以下將介紹如何使用 Source Code 將 Open vSwitch（OVS）安裝在 Ubuntu 上。OVS 官方提及，如要安裝會需要具備以下套件：
 
 > 以下的步驟，是參考 OVS 的 [Installation Guide](https://github.com/openvswitch/ovs/blob/master/Documentation/intro/install/general.rst) 進行，如有不清楚的地方，可以直接參考官方版本。
 
 * A C compiler:
-	* GCC 4.X
+  * GCC 4.X
 * libssl
 * libcap-ng
 * python 2.7（six）
@@ -51,11 +53,19 @@ $ sudo apt-get install git
 
 ## 安裝的準備作業
 
-先利用`get clone`將 OVS 的原始碼下載下來：
+先利用 `get clone` 將 OVS 的原始碼下載下來：
 
 ```shell
 $ git clone https://github.com/openvswitch/ovs.git
 ```
+選擇想安裝的版本：
+
+```shell
+$ git checkout v2.7.0
+```
+
+> 也可以直接 checkout 到想安裝的 branch 上
+
 接下來，到 Source Code 目錄中，並執行 boot.sh 產生安裝所需的 configure 檔：
 
 ```shell
@@ -67,14 +77,14 @@ $ ./boot.sh
 
 ```shell
 $ ./configure --with-linux=/lib/modules/$(uname -r)/build
-``` 
+```
 
 ## 編譯、安裝
 
 使用 make 進行編譯：
 
 ```shell
-$ sudo make
+$ make
 ```
 
 接下來，模組安裝入系統中：
@@ -88,63 +98,80 @@ $ sudo make install
 ```shell
 $ sudo make modules_install
 ```
+因系統可能曾安裝過 OVS kernel module，所以我們需要複寫 `openvswitch.conf` ，讓系統指向正確 kernel module 位置（這次編譯產生的 module）。腳本如下：
+
+```
+#! /bin/bash
+
+config_file="/etc/depmod.d/openvswitch.conf"
+for module in datapath/linux/*.ko; do
+        modname="$(basename ${module})"
+        echo "override ${modname%.ko} * extra" >> "$config_file"
+        echo "override ${modname%.ko} * weak-updates" >> "$config_file"
+done
+
+depmod -a
+```
+
+> 此腳本（[prefer_this_kernel_module.sh](https://github.com/OSE-Lab/Learning-SDN/tree/master/Switch/OpenvSwitch/InstallwithSourceCode/prefer_this_kernel_module.sh)）請在 clone 下的的資料夾 `ovs` 中執行。
+>
 > 如果執行後得到訊息：
 >
-> ```shell
+> ```
 > ...
 > Can't read private key
 > ...
 > ```
+>
 > 請不用擔心，並沒有出錯。[詳情](http://discuss.openvswitch.narkive.com/c3Zva9hW/ovs-discuss-get-errors-when-i-try-to-install-ovs-2-0-from-souce-code-can-t-read-private-key)
 
 載入核心模組：
 
 ```shell
 sudo /sbin/modprobe openvswitch
-``` 
+```
 
 確認是否已經載入：
 
 ```shell
-$ sudo /sbin/lsmod | grep openvswitch
-openvswitch            70989  0
-vxlan                  37611  1 openvswitch
+$ /sbin/lsmod | grep openvswitch
+openvswitch           257342  0
+nf_nat_ipv6            13279  1 openvswitch
+nf_nat_ipv4            13263  1 openvswitch
+nf_defrag_ipv6         34768  2 openvswitch,nf_conntrack_ipv6
+nf_defrag_ipv4         12758  2 openvswitch,nf_conntrack_ipv4
+nf_nat                 21841  3 openvswitch,nf_nat_ipv4,nf_nat_ipv6
+nf_conntrack           97201  6 openvswitch,nf_nat,nf_nat_ipv4,nf_nat_ipv6,nf_conntrack_ipv4,nf_conntrack_ipv6
 gre                    13796  1 openvswitch
 libcrc32c              12644  1 openvswitch
 ```
 
 ## 啟動
 
-再啟動之前，需要先設定好 ovs-vswitchd 所依賴的資料庫，也就是 ovsdb-server。設定方式如下：
+再啟動之前，需要先設定好 OVS 所需要的配置檔。產生方式如下：
 
 ```shell
 $ mkdir -p /usr/local/etc/openvswitch
 $ sudo ovsdb-tool create /usr/local/etc/openvswitch/conf.db \
     vswitchd/vswitch.ovsschema
 ```
-設定資料庫連結：
+接下來，透過 OVS 提供的好用工具 `ovs-ctl` 來啟動 OVS！
 
-```shell
-$ mkdir -p /usr/local/var/run/openvswitch
-$ sudo ovsdb-server --remote=punix:/usr/local/var/run/openvswitch/db.sock \
-    --remote=db:Open_vSwitch,Open_vSwitch,manager_options \
-    --private-key=db:Open_vSwitch,SSL,private_key \
-    --certificate=db:Open_vSwitch,SSL,certificate \
-    --bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert \
-    --pidfile --detach --log-file
+> 除了啟動，還其它的操作可以利用方便的 `ovs-ctl` 進行。[ovs-ctl](http://openvswitch.org/support/dist-docs/ovs-ctl.8.txt) 
+
+```Sh
+$ sudo /usr/local/share/openvswitch/scripts/ovs-ctl --system-id=random start 
 ```
 
-使用 ovs-vsctl 初始化資料庫：
+`--system-id=random` 的用意在於，給此 OVS 一個特定的編號（UUID）。如果沒有要特別指定的編號，就可以像上述指令，給予參數 `random`。
 
-```shell
-$ sudo ovs-vsctl --no-wait init
-```
-
-開始連結：
-
-```shell
-$ sudo ovs-vswitchd --pidfile --detach --log-file
-```
+> 在我的環境中使用指令：
+>
+> ```shell
+> export PATH=$PATH:/usr/local/share/openvswitch/scripts
+> ```
+>
+> 後，`root` 的環境變數中依然沒有加入此路徑。因此，將此路徑直接加入 `/etc/environment` 中，即可被 `root` 找到。此動作為可選（Optional），單純為了往後操作方便。
 
 現在，已經完成 OVS 的安裝了。接下來，可以透過設定一個 bridge 來確定是否安裝成功：
 
