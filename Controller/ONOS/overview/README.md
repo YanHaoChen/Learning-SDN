@@ -38,4 +38,4 @@ ONOS 被分成以下三個部分：
 
 ### 將協定以不可知論（Protocol Agnosticism）
 
-當 ONOS 需要支援一個新的協定時，ONOS 在建立一個的對應的 南向 network-facing 模組時，此模組需像一個插件，可直接載入系統中。
+當 ONOS 需要支援一個新的協定時，ONOS 及可建立一個對應的南向 network-facing 模組，且此模組需像一個插件，可直接載入系統中運行。
