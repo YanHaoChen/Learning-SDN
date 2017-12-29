@@ -11,6 +11,7 @@
 
 #### 架構
 * [Overview](https://github.com/OSE-Lab/Learning-SDN/tree/master/Controller/ONOS/overview)
+* [System Components](https://github.com/OSE-Lab/Learning-SDN/tree/master/Controller/ONOS/system_components)
 
 #### 實作
 * [Step 1: 初步了解 ONOS 並安裝](https://github.com/OSE-Lab/Learning-SDN/tree/master/Controller/ONOS/step1)
