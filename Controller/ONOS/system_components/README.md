@@ -8,7 +8,7 @@
 
 就像前一章所提，ONOS 的系統層級是以功能進行區分的。接下來的介紹，將以此圖作為主軸，進行討論。
 
-![onos-stack](https://github.com/OSE-Lab/Learning-SDN/tree/master/Controller/ONOS/overview/images/onos-stack.png?raw=true)
+![onos-stack](https://github.com/OSE-Lab/Learning-SDN/raw/master/Controller/ONOS/system_components/images/onos-stack.png)
 
 ## 服務及子系統
 
@@ -26,5 +26,4 @@ ONOS 定義了幾個主要的服務：
 
 下圖為 ONOS 中具備的多元子系統。其中包含已經完成及一些將要發佈的子系統：
 
-![onos-subsystems](https://github.com/OSE-Lab/Learning-SDN/tree/master/Controller/ONOS/overview/images/onos-stack.png?raw=true)
-
+![onos-subsystems](https://github.com/OSE-Lab/Learning-SDN/raw/master/Controller/ONOS/system_components/images/onos-subsystems.png)
