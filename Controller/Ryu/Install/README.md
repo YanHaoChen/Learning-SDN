@@ -12,10 +12,12 @@ $ pip install ryu
 1. 安裝所需要的套件
 ```shell
 $ sudo apt-get update //更新可取得的套件版本
-$ sudo apt-get install python-pip //安裝 pyhon套件管理器 pip
+$ sudo apt-get install python-pip //安裝 pyhon 套件管理器 pip
+$ sudo apt-get install git
 
 //以下是相關套件
 $ sudo apt-get install python-greenlet //pip 安裝 greenlet 時有錯誤，只好使用 apt-get 進行安裝
+$ sudo pip install --upgrade pip
 $ sudo pip install oslo.config
 $ sudo pip install msgpack-python
 $ sudo pip install eventlet==0.18.2
