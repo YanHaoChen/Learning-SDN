@@ -8,7 +8,7 @@
 
 就像前一章所提，ONOS 的系統層級是以功能進行區分的。接下來的介紹，將以此圖作為主軸，進行討論。
 
-![onos-stack](https://github.com/OSE-Lab/Learning-SDN/raw/master/Controller/ONOS/system_components/images/onos-stack.png)
+![onos-stack(from https://wiki.onosproject.org/)](https://github.com/OSE-Lab/Learning-SDN/raw/master/Controller/ONOS/system_components/images/onos-stack.png)
 
 ## 服務及子系統
 
@@ -26,4 +26,24 @@ ONOS 定義了幾個主要的服務：
 
 下圖為 ONOS 中具備的多元子系統。其中包含已經完成及一些將要發佈的子系統：
 
-![onos-subsystems](https://github.com/OSE-Lab/Learning-SDN/raw/master/Controller/ONOS/system_components/images/onos-subsystems.png)
+![onos-subsystems(from https://wiki.onosproject.org/)](https://github.com/OSE-Lab/Learning-SDN/raw/master/Controller/ONOS/system_components/images/onos-subsystems.png)
+
+## 子系統架構
+
+每個子系統的元件分別散佈在三個主要層級中，並可藉由一或多個  Java 介面識別他們實作的內容。
+
+下圖為子系統中元件之間的關係圖。圖中的上虛線，由北向 API 所定義，下虛線則由南向 API 。
+
+![onos-service(from https://wiki.onosproject.org/)](https://github.com/OSE-Lab/Learning-SDN/raw/master/Controller/ONOS/system_components/images/onos-service.png)
+
+### Provider
+
+在 ONOS 中屬於最底層，Provider 的介面透過特定的協定連接網路，並透過`ProviderService`與 ONOS 核心（中間層）溝通。
+
+Protocol-aware provider 則是藉由多樣（控制用、設定用）的協定管理網路環境。並將特定服務所需求的網路資訊傳入核心中。Provider 提供給特定服務的資訊有可能是取自其他子系統並加以轉換而來。
+
+有些 Provider 則是需要透過核心下達指令，將它們應用於特定的協定下。這些動作則透過`Provider`介面，下達至 Provider 中。
+
+#### Provider ID
+
+一個 Provider 將會賦予一個關聯 `PrviderId`。此 ID 的主要用意在於提供外部識別此 Provider 的所屬的 Provider 家族。
