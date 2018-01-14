@@ -46,4 +46,14 @@ Protocol-aware provider 則是藉由多樣（控制用、設定用）的協定�
 
 #### Provider ID
 
-一個 Provider 將會賦予一個關聯 `PrviderId`。此 ID 的主要用意在於提供外部識別此 Provider 的所屬的 Provider 家族。
+一個 Provider 將會賦予一個關聯 `ProviderId`。此 ID 的主要用意在於提供外部識別此 Provider 所屬的 Provider 家族。進一步的允許因此 Provider 而存在的設備或模組保留與此 Provider 間的關聯，即使此 Provider 是否安裝或卸載。
+
+`ProviderId`使用 URI（統一資源標誌符）提供一種較寬鬆的設備與 Provider （除了指定的 Provider 及可替代的同家族 Provider）的配對方式。也因此，設備可能並不是直接連接指定的 Provider 本身。
+
+
+
+#### Multiple Providers
+
+一個子系統可能關聯多個 Provider. 在這種情況下，Provider 將區分為`primary`及`ancillary`。Primary Provider 們擁有與服務間的實體關聯，Ancillary Provider 們提供資訊給服務的方式如 Overlay 的概念。其方式，會給主要的 Provider 設定優先權，目的也就像 Overlay 解決與 Underlay 之間衝突的問題一樣。
+
+Device Subsystem 就是能支援 Multiple Providers 的服務。
