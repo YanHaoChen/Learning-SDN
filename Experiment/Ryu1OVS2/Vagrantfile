@@ -1,0 +1,28 @@
+Vagrant.configure("2") do |config|
+	config.vm.define "controller" do |controller|
+		controller.vm.box = "ubuntu/trusty64"
+		controller.vm.provider "virtualbox" do |v|
+			v.memory = 2048
+			v.cpus = 2
+		end
+		controller.vm.provision "shell", path: "ryu_install.sh"
+		controller.vm.hostname = "controller"
+		controller.vm.network "private_network", ip:"172.25.0.10"
+	end
+
+	(1..2).each do |i|
+		config.vm.define "ovs#{i}" do |ovs|
+			ovs.vm.box = "ubuntu/trusty64"
+			ovs.vm.provider "virtualbox" do |v|
+				v.memory = 1024
+				v.cpus = 1
+			end
+			ovs.vm.provision "shell", preserve_order: true, path: "ovs_install.sh"
+			ovs.vm.provision "shell", preserve_order: true,
+			inline: "sudo /usr/local/share/openvswitch/scripts/ovs-ctl --system-id=#{i} start",
+			run: "always"
+			ovs.vm.network "private_network", ip:"172.25.0.1#{i}"
+			ovs.vm.hostname = "ovs#{i}"
+		end
+	end
+end
