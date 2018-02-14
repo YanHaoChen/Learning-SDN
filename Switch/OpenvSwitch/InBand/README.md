@@ -23,7 +23,7 @@ Open vSwitch 支援以上兩種模式。此節主要討論 In-Band 的設計原�
 
 ### 原則
 
-In-Band 最基本的運作原則在於，OpenFlow Switch 需要不透過 Controller 自行認定及管理 Controller 與 Switch 間的連線。但在實作上會遇到一些**特例狀況**，導致無法直接奉行原則。
+In-Band 最基本的運作原則在於，OpenFlow Switch 需要不透過 Controller 自行認定及管理 Controller 與 Switch 間的連線。但在實作上會遇到一些**特殊需求、狀況**，導致無法單純奉行原則就可以運作。
 
 設定這個簡要原則的原因很簡單。如果 Switch 沒辦法自行管理 Controller 與 Switch 間的連線，在執行上就會產生一些矛盾：當 Switch 想要連接 Controller 時，將無法成功。因為只有 Controller 可以下路由規則和規劃 Switch 至 Controller 的連接路徑。
 
@@ -36,7 +36,7 @@ In-Band 最基本的運作原則在於，OpenFlow Switch 需要不透過 Control
 
 
 
-以下幾點，將介紹**特例狀況**。
+以下幾點，將介紹**特殊需求、狀況**。
 
 > 以下的論點，皆是以 Switch 的角度看待。
 
@@ -46,7 +46,7 @@ In-Band 最基本的運作原則在於，OpenFlow Switch 需要不透過 Control
 
   也因此，原則是無法在實作上奉行的。因需考量到 Switch 與 Controller 連接時的各種情況。例如當 Switch 連接中的 Controller 忘記或著其他原因遺失 Switch 的 MAC 位址時，Controller 就需要傳送一個 ARP 請求的廣播封包，來取得 Switch 的 MAC 位址。但 Switch 在收到此請求後，卻無法透過與 Controller 之間的連線回傳，因 Switch 正與 Controller 連線中（並不符合使用 In-Band 的情況），所以 Switch 的 ARP 回覆，只會變成一個普通的 **OFPT_PACKET_IN** 訊息傳送至 Controller，Controller 也只會當它是一個管轄內的封包來處理，而不是它與 Switch 間溝通的封包。這樣就會導致 Controller 無法得知 Switch 的 MAC 位址，且 Switch 也無法得到 Controller 的回覆，因為 Controller 並不知道 Switch 的 MAC 位址。這樣的**死結**，解決辦法只有一種，就是讓 Switch 可以自行判斷與 Controller 的連線狀況，再做進一步的處理。
 
-* In-Band 的規則（Flow），可被其他由 Controller 下達的規則所覆蓋。  
+* In-Band 的規則（Flow），可能被其他由 Controller 下達的規則所覆蓋。  
 
   這樣的情況，也是再正常不過的事。因為在原則下，Controller 將會在與 Switch 的連線建立後，獲得整體網路規則的控制權。
 
@@ -54,11 +54,11 @@ In-Band 最基本的運作原則在於，OpenFlow Switch 需要不透過 Control
 
 * Switch 需要認得所有的控制用封包。
 
-  這是 In-Band 中，最基本的原則。Switch 必須在沒有 Controller 幫助下，認得 Controller 與 Switch 間控制用封包。更嚴謹的說法，必須認得**所有 Controller 與 Switch 間控制用封包**。因在**假負（False negatives）**的情況下，也就是 Switch 沒有認出封包是控制用封包，就會導致控制用封包風暴。
+  這是 In-Band 中，最基本的原則。Switch 必須在沒有 Controller 幫助下，認得 Controller 與 Switch 間控制用封包。更嚴謹的說法，必須認得**所有 Controller 與 Switch 間控制用封包**。因在**假負**（False negatives）的情況下，也就是 Switch 沒有認出封包是控制用封包，就會導致控制用封包風暴。
 
   考量到 OpenFlow Switch 只認得傳向自己或者由他傳出的控制用封包。現在假設有 A、B 兩台 Switch 及一台  Controller，且皆接在同一個 Hub 下。當 A Switch 傳出一個控制用封包時，B Switch 也會收到。當 B Switch 收到時，因為是別人的控制用封包，因此 B Switch 並不認得，所以 B Switch 傳送 OFPT_PACKET_IN 給 Controller（也就是另一個控制用封包），此時換成 A Switch 會收到不認得的控制用封包，並傳送 OFPT_PACKET_IN 給 Controller。就這樣不斷循環下去，造成控制用封包風暴。
 
-  另外**假正**的情況下（不該被認為是控制用的封包，還是被認為是控制用封包），造成的網路負擔比較不嚴重。因為此狀況會導致 Controller 無法控制 Switch，但網路仍可正常運作。但此情況還會衍生出另一個問題，也是安全方面的問題（是否有偽造的控制用封包？）。
+  另外**假正**（False positives）的情況下（不該被認為是控制用的封包，還是被認為是控制用封包），造成的網路負擔比較不嚴重。因為此狀況會導致 Controller 無法控制 Switch，但網路仍可正常運作。但此情況還會衍生出另一個問題，也是安全方面的問題（是否有偽造的控制用封包？）。
 
 * Switch 需要使用 echo-requests 偵測連線是否中斷。
 
