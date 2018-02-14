@@ -52,4 +52,14 @@ In-Band 最基本的運作原則在於，OpenFlow Switch 需要不透過 Control
 
   但此特例狀況仍會在實作上遇到問題。一般 Controller 在管理規則時，都會設定一個**預設規則**（最後一手），對應到此規則後，所採取的動作大多是**送至 Controller **或者**丟棄**。假設 In-Band 用的連線規則被覆寫，Switch 要再與 Controller 建立 In-Band 連線時，建立連線用的請求封包只能對應到預設規則，被送往 Controller 並被當作管理網路內的封包，或著直接被丟棄。
 
+* Switch 需要認得所有的控制用封包。
 
+  這是 In-Band 中，最基本的原則。Switch 必須在沒有 Controller 幫助下，認得 Controller 與 Switch 間控制用封包。更嚴謹的說法，必須認得**所有 Controller 與 Switch 間控制用封包**。因在**假負（False negatives）**的情況下，也就是 Switch 沒有認出封包是控制用封包，就會導致控制用封包風暴。
+
+  考量到 OpenFlow Switch 只認得傳向自己或者由他傳出的控制用封包。現在假設有 A、B 兩台 Switch 及一台  Controller，且皆接在同一個 Hub 下。當 A Switch 傳出一個控制用封包時，B Switch 也會收到。當 B Switch 收到時，因為是別人的控制用封包，因此 B Switch 並不認得，所以 B Switch 傳送 OFPT_PACKET_IN 給 Controller（也就是另一個控制用封包），此時換成 A Switch 會收到不認得的控制用封包，並傳送 OFPT_PACKET_IN 給 Controller。就這樣不斷循環下去，造成控制用封包風暴。
+
+  另外**假正**的情況下（不該被認為是控制用的封包，還是被認為是控制用封包），造成的網路負擔比較不嚴重。因為此狀況會導致 Controller 無法控制 Switch，但網路仍可正常運作。但此情況還會衍生出另一個問題，也是安全方面的問題（是否有偽造的控制用封包？）。
+
+* Switch 需要使用 echo-requests 偵測連線是否中斷。
+
+  TCP 本身就可以觀察是否還在連線，但問題就在可能會需要經過很長的時間，才能偵測的到。例如 Linux 核心在執行 TCP 時，就需要等待 13 至 30 分鐘不等，才能確定連線是否中斷（timeout）。這樣的等待時間太長了，所以 OpenFlow Switch 就需要實做自己的連線逾時，也就是 OpenFlow **OFPT_ECHO_REQUEST** 訊息。這是最佳的方式，因為 Switch 可以直接透過他來測試 OpenFlow 的連線狀況。
