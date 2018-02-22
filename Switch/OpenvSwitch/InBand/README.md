@@ -62,4 +62,12 @@ In-Band 最基本的運作原則在於，OpenFlow Switch 需要不透過 Control
 
 * Switch 需要使用 echo-requests 偵測連線是否中斷。
 
-  TCP 本身就可以觀察是否還在連線，但問題就在可能會需要經過很長的時間，才能偵測的到。例如 Linux 核心在執行 TCP 時，就需要等待 13 至 30 分鐘不等，才能確定連線是否中斷（timeout）。這樣的等待時間太長了，所以 OpenFlow Switch 就需要實做自己的連線逾時，也就是 OpenFlow **OFPT_ECHO_REQUEST** 訊息。這是最佳的方式，因為 Switch 可以直接透過他來測試 OpenFlow 的連線狀況。
+  TCP 本身就可以觀察是否還在連線，但問題就在可能會需要經過很長的時間，才能偵測的到。例如 Linux 核心在執行 TCP 時，就需要等待 13 至 30 分鐘不等，才能確定連線是否中斷（timeout）。這樣的等待時間太長了，所以 OpenFlow Switch 就需要實做自己的連線逾時，也就是 OpenFlow **OFPT_ECHO_REQUEST** 訊息。這是最佳的方式，因為 Switch 可以直接透過它來測試 OpenFlow 的連線狀況。
+
+### 實作
+
+此部分，將介紹 Open vSwitch 如何實作 In-Band。上一個章節已經說明了，In-Band 在實作上是非常困難的。因此，如想修改此部分的程式時，請確認完全瞭解上述的考量再進行更動。
+
+Open vSwitch 在實作 In-Band 時，是將 Controller 與 Switch 溝通用的連線規則（Flow）**隱藏**起來。所謂的隱藏，指的是將連線規則不歸納在 OpenFlow 中，並且將其優先權高於由 OpenFlow 下達的預設規則。這麼一來， Controller 將無法干預 In-Band 的運行，也去除 Controller 與 Switch 間連線中斷的可能。雖然說連線規則不會在 OpenFlow 中，但還是可以透過`ovs-appctl`的`bridge/dump-flows`指令看到所有規則（包含連線規則）。
+
+實作上，Open vSwitch 可以將隱藏地連線至任意的**遠端**，遠端的意思就是一個 IP 位址上的 TCP Port。目前在實作上，這些遠端將由 In-Band 自動配置，如同 OpenFlow Controller 及 OVSDB Managers。（OVSDB Manager  是最基本需要被配置的，因為 OVSDB Managers 會需要負責與 OpenFlow Controllers 溝通，所以如果無法連線至 OVSDB Manager，自然無法控制 OpenFlow）。
