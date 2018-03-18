@@ -1,6 +1,6 @@
 # Open vSwitch In-Band Control 實作方式
 
-> 翻譯 [Open vSwitch In-Band Control](http://docs.openvswitch.org/en/latest/topics/design/?highlight=in%20band#in-band-control)，並加入個人見解
+> 翻譯 [Open vSwitch In-Band Control](http://docs.openvswitch.org/en/latest/topics/design/?highlight=in%20band#in-band-control)，並加入個人見解。有部分內容有用自己的方式改述，改述的地方無法保證完全符合官方所想表達的意思，再請參閱官方文件為主。
 
 一個稱職的 OpenFlow Switch，應當負責建立及維護與 Controller 的連線（TCP）。連線的模式主要劃分為以下兩種：
 
@@ -71,3 +71,14 @@ In-Band 最基本的運作原則在於，OpenFlow Switch 需要不透過 Control
 Open vSwitch 在實作 In-Band 時，是將 Controller 與 Switch 溝通用的連線規則（Flow）**隱藏**起來。所謂的隱藏，指的是將連線規則不歸納在 OpenFlow 中，並且將其優先權高於由 OpenFlow 下達的預設規則。這麼一來， Controller 將無法干預 In-Band 的運行，也去除 Controller 與 Switch 間連線中斷的可能。雖然說連線規則不會在 OpenFlow 中，但還是可以透過`ovs-appctl`的`bridge/dump-flows`指令看到所有規則（包含連線規則）。
 
 實作上，Open vSwitch 可以將隱藏地連線至任意的**遠端**，遠端的意思就是一個 IP 位址上的 TCP Port。目前在實作上，這些遠端將由 In-Band 自動配置，如同 OpenFlow Controller 及 OVSDB Managers。（OVSDB Manager  是最基本需要被配置的，因為 OVSDB Managers 會需要負責與 OpenFlow Controllers 溝通，所以如果無法連線至 OVSDB Manager，自然無法控制 OpenFlow）。
+
+以下的 OpenFlow 規則（透過 OFPP_NORMAL action 運行）將建立在任何有連接 OpenFlow 設備的 OVS Bridge 上：
+
+1. 從本機 port 送出的 DHCP 請求封包。
+2. 接收 ARP 回覆封包（目的地為本機 port 的 MAC 位址） 。
+3. 送出 ARP 請求封包（來源為本機 port 的 MAC 位址） 。
+
+在 In-Band 模式下，可能因為 Remote 並不在同一個 Bridge 中，而需要多個節點（Bridge）才能到達。所以也會建立以下規則，來指定傳送到哪個節點（Next-Hop），讓需要往來此 Remote 的封包能順利傳送：
+
+4. 接收傳往特定 Next-Hop（以 MAC 位址對應）的 ARP 回覆封包 。
+5. 從此 Next-Hop（以 MAC 位址對應）送出 ARP 請求封包 。
