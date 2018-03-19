@@ -102,3 +102,16 @@ In-band 模式觀察那些試圖將 Flow 加入 Datapath （Bridge），並可�
 這些實作細節，對於一個基於 ISO 第三層所建立，且主要在專注處理 ARP 封包的 In-Band 模式，是讓人意想不到的。乍看之下，會以為有很多規則是多餘的，但實際上，每個規則都有它存在的意義。例如，為了判斷 MAC 位址是否為 Remote ，所以我們建立了額外的 ARP 規則，且讓符合這些規則的封包可以透過實體端口送出（使用上述2、3 號規則）。另外，如果 Switch 是在另一台 Switch 與 Remote 的連線上，此 Switch 則需要幫忙轉送彼此的 ARP 封包（雖然我們沒辦法預先得知其他 Switch 的 MAC 位址，但我們可以透過已得知 Remote 及 Gateway 的 MAC 位址，進而運行 4、5 號規則來達到此目的）。最後，如果 Romote 是在一個實體端口所連接的主機中的虛擬機，而導致無法直接透過實體端口連接至 Romote，則連接至虛擬機的 Switch 需要能接收內容有 Remote IP 的 ARP 封包，因為此 Switch 並不能確定收到的 MAC 位址是實體端口的還是虛擬機中的 Remote 的。
 
 除了等一下會提到的幾種例外狀況，In-band 模式能在大多數的網路中運行。以下為目前可支援的網路環境狀況：
+
+* 本地區域連線：Switch 跟 Remote 在同一個子網內。這樣的環境下需要的是 1、2、3、8、9 號規則。
+* 往需要通過 Gateway：Switch 跟 Remote 在不同的子網路內，需要透過 Gateway 連結。這樣的環境下需要的是 1、2、3、8、9 號規則。
+* 介在 Switch 跟 Remote 間：此台 Switch 介在其他台 Switch 跟 Remote 的中間，我們希望它能轉送其他台 Switch 的封包。這樣的環境下需要的是 4、5、8、9 號規則。注意，除非由 Controller 明確地讓 DHCP 通行，不然 DHCP 封包是無法同行的。
+* 介在 Switch 跟 Gateway 間：此台 Switch 介在其他台 Switch 跟 Gateway 的中間，我們希望它能轉送其他台 Switch 的封包。這樣的環境下需要的規則跟**介在 Switch 跟 Remote 間**一樣。
+* Remote 是在實體電腦中的虛擬機：Remote 跑在一台虛擬機上，且正在執行 In-band。這樣的環境下需要的是 1、2、3、8、9 號規則。
+* Remote 是在實體電腦中的虛擬機，且在不同網路中：Remote 跑在一台虛擬機上，且正在執行 In-band，但並沒有與實體端口連接。例如，將一個 IP 設定在此 Switch 的 eth0 端口上，Remote 的虛擬機透過 Switch 上的 eth1 連接 Switch，但此狀況下 eth1 就沒有對應的 IP。這麼一來，Switch 將會使用 eth0 去連接這台 Remote，但 eth1 此實體端口的規則是沒有作用的。此情況下，則需要在 eth0 上使用 1、2、3、8、9 號規則，eth1 則使用 6、7、8、9 號規則。
+
+以下為目前無法支援的網路環境狀況：
+
+* 以名稱指定 Remote：目前來說，Remote 都是由 IP 位址指定。最天真讓這件事可行的方法可能就是允許所有的 DNS 封包也能透過 In-band 的連線傳送。很遺憾的是，這樣做會導致 Controller 無法運行任何 DNS 的管理機制，因為當後來加入的 Switch 時，In-band 無法簡單的設定哪些實體端口需要讓 DNS 封包可以通行。正確能支援**以名稱指定 Remote**，是需要解析 DNS 請求，進而藉由解析出來 Remote 的名稱來決定哪些 DNS 封包可以放行。但基於潛在的安全及需要處理的量上，OVS 決定暫時擱置。
+* Switch 需要對應不同的 Remote：Switch 需要透過 IP 位址知道所有 Switch 會使用到的 Remote，這樣一來，才能下達相關的規則（6、7、8、9 號規則），將封包轉送至 Remote。 
+* Switch 需要對應不同的 Router：由於 Switch 允許其他 Switch 透過本身將封包送往 Gateway 與 Remote 連結，也就代表需要允許 Gateway 的封包流過它（4、5 號規則）。如果任兩台 Switch 到 Remote 所選擇的 Route 不同，Switch 將不知道該選擇哪個為 Gateway。
