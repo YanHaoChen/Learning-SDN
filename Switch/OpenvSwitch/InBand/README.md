@@ -82,3 +82,15 @@ Open vSwitch 在實作 In-Band 時，是將 Controller 與 Switch 溝通用的�
 
 4. 接收傳往特定 Next-Hop（以 MAC 位址對應）的 ARP 回覆封包 。
 5. 從此 Next-Hop（以 MAC 位址對應）送出 ARP 請求封包 。
+
+In-Band 也會建立以下規則，來轉送每個 Remote 的 IP 位址，讓 Remote 彼此知道對方的 IP 位址：
+
+6. 使用 ARP 回覆，傳送欲取得的 Remote IP 位址。
+7. 在 ARP 請求中，附帶來源的 Remote IP 位址。
+
+In-Band 也會建立以下規則，來轉送連接建立後的 TCP 封包（以 IP、Port 對應）：
+
+8. 傳送到指定 Remote 的 TCP 封包。
+9. 接收到指定 Remote 的 TCP 封包。
+
+這些規則的目的在於，盡可能減少 Switch 對於網路的需求，並且讓 Switch 跟能 Remote 有溝通的管道。但如稍早所提，這些規則的優先權都會高於 Controller 所下達的規則，所以如果這些規則影響的範圍越大，就越有可能會影響 Controller 實作網路的規劃。因此，In-Band 模式會主動觀察流量及封包的運作狀況，進一步讓這些規則可以更精確（降低對網路的影響）。
