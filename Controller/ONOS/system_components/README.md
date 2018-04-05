@@ -12,7 +12,7 @@
 
 ## 服務及子系統
 
-**服務**的組成是為實現一個功能，一個服務可能包含多個元件，且這些元件的種類垂直跨越系統的各個層級，也因此就像是將這些元件堆疊起來一樣。介於服務就像是個**子系統**，所以在此文件中，**服務**跟**子系統**具有相同的意思。
+**服務（Service）**的組成是為實現一個功能，一個服務可能包含多個元件，且這些元件的種類垂直跨越系統的各個層級，也因此就像是將這些元件堆疊起來一樣。介於服務就像是個**子系統（Subsystem）**，所以在此文件中，**服務**跟**子系統**具有相同的意思。
 
 ONOS 定義了幾個主要的服務：
 
@@ -50,10 +50,14 @@ Protocol-aware provider 則是藉由多樣（控制用、設定用）的協定�
 
 `ProviderId`使用 URI（統一資源標誌符）提供一種較寬鬆的設備與 Provider （除了指定的 Provider 及可替代的同家族 Provider）的配對方式。也因此，設備可能並不是直接連接指定的 Provider 本身。
 
-
-
 #### Multiple Providers
 
-一個子系統可能關聯多個 Provider. 在這種情況下，Provider 將區分為`primary`及`ancillary`。Primary Provider 們擁有與服務間的實體關聯，Ancillary Provider 們提供資訊給服務的方式如 Overlay 的概念。其方式，會給主要的 Provider 設定優先權，目的也就像 Overlay 解決與 Underlay 之間衝突的問題一樣。
+一個子系統可能關聯多個 Provider. 在這種情況下，Provider 將區分為`primary`及`ancillary`。Primary Provider 們擁有與服務間的實體關聯，Ancillary Provider 們提供資訊給服務的方式如 Overlay 的概念。其運作方式，為給主要的 Provider 的資訊較高的優先權，目的也就像 Overlay 解決與 Underlay 之間衝突的問題一樣。
 
 Device Subsystem 就是能支援 Multiple Providers 的服務。
+
+###Manager
+
+當一個元件放置於核心當中，Mananger 將會收到來自 Providers 的資訊，並將此資訊提供給**應用程式（Applications）**或其他的服務。Manager 提供以下介面：
+
+* 南向服務介面：		
