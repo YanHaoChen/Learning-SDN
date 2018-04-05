@@ -60,4 +60,9 @@ Device Subsystem 就是能支援 Multiple Providers 的服務。
 
 當一個元件放置於核心當中，Mananger 將會收到來自 Providers 的資訊，並將此資訊提供給**應用程式（Applications）**或其他的服務。Manager 提供以下介面：
 
-* 南向服務介面：		
+* 北向服務（`Service`）介面：連接應用程式或者其他可學習特定網路環境的核心元件。
+* 管理者服務（`AdminService`）介面：接收管理者指令，並在網路環境或系統中加入此指令。
+* 南向供應者註冊（`ProviderRegistry`）介面：連接可以註冊在此 Manager 中的 Provider，進一步可以讓 Manager 與 Provider 互動。
+* 南向供應者服務（`ProviderService`）介面：提供給已註冊的 Provider 使用，讓 Provider 可以傳送及接收來自 Manager 的訊息。
+
+使用上述介面，有可會同步地接收到用於尋訪各服務的訊息，及異步地接受到事件監聽者的訊息。（以`ListenerService`介面為例。每個服務介面註冊事件時會使用到它，以及實作`Eventlistener`介面時用它來接受觸發的事件）。
