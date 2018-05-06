@@ -12,7 +12,7 @@
 
 ## 服務及子系統
 
-**服務（Service）**的組成是為實現一個功能，一個服務可能包含多個元件，且這些元件的種類垂直跨越系統的各個層級，也因此就像是將這些元件堆疊起來一樣。介於服務就像是個**子系統（Subsystem）**，所以在此文件中，**服務**跟**子系統**具有相同的意思。
+**服務（Service）**的組成是為實現一個功能，一個服務可能包含多個元件，且這些元件的種類垂直跨越系統的各個層級，也因此就像是將這些元件堆疊起來一樣。由於服務就像是個**子系統（Subsystem）**，所以在此文件中，**服務**跟**子系統**具有相同的意思。
 
 ONOS 定義了幾個主要的服務：
 
@@ -40,7 +40,7 @@ ONOS 定義了幾個主要的服務：
 
 在 ONOS 中屬於最底層，Provider 的介面透過特定的協定連接網路，並透過`ProviderService`與 ONOS 核心（中間層）溝通。
 
-Protocol-aware provider 則是藉由多樣（控制用、設定用）的協定管理網路環境。並將特定服務所需求的網路資訊傳入核心中。Provider 提供給特定服務的資訊有可能是取自其他子系統並加以轉換而來。
+Protocol-aware provider 則是藉由多樣的協定（控制用、設定用）管理網路環境。並將特定服務所需求的網路資訊傳入核心中。Provider 提供給特定服務的資訊有可能是取自其他子系統並加以轉換而來。
 
 有些 Provider 則是需要透過核心下達指令，將它們應用於特定的協定下。這些動作則透過`Provider`介面，下達至 Provider 中。
 
@@ -58,7 +58,7 @@ Device Subsystem 就是能支援 Multiple Providers 的服務。
 
 ###Manager
 
-當一個元件放置於核心當中，Mananger 將會收到來自 Providers 的資訊，並將此資訊提供給**應用程式（Applications）**或其他的服務。Manager 提供以下介面：
+放置於核心（Core）當中。Mananger 將會收到來自 Providers 的資訊，並將此資訊提供給**應用程式（Applications）**或其他的服務。Manager 提供以下介面：
 
 * 北向服務（`Service`）介面：連接應用程式或者其他可學習特定網路環境的核心元件。
 * 管理者服務（`AdminService`）介面：接收管理者指令，並在網路環境或系統中加入此指令。
@@ -66,3 +66,17 @@ Device Subsystem 就是能支援 Multiple Providers 的服務。
 * 南向供應者服務（`ProviderService`）介面：提供給已註冊的 Provider 使用，讓 Provider 可以傳送及接收來自 Manager 的訊息。
 
 使用上述介面，有可會同步地接收到用於尋訪各服務的訊息，及異步地接受到事件監聽者的訊息。（以`ListenerService`介面為例。每個服務介面註冊事件時會使用到它，以及實作`Eventlistener`介面時用它來接受觸發的事件）。
+
+### Store
+
+跟 Manager 一樣在核心當中，且與 Manager 有緊密的關係。Store 負責檢索、保存 Manager 所收到訊息，並確保其訊息的一致性。當資料直接透過各 ONOS 實體中 Store 進行跨多 ONOS 實體的傳輸時，Store 需要負責確保資料的一致性以及資料的可靠性。如果有更多有關於 Store 的分散式設定，可以觀看連結：[Cluster Coordination](https://wiki.onosproject.org/display/test/Cluster+Coordination)。
+
+### Application
+
+Application 負責消化及運用從 Manager 接收到的訊息（來自於`AdminService`及`Service`介面）。Application 有廣泛的應用空間，其範圍從如何在網站上顯示網路拓樸，到如何設定路由路徑都是在 Application 的範圍內。
+
+#### Application ID
+
+每個 Application 將會與一個唯一的`ApplicationId`建立關聯。此識別值用來讓 ONOS 追蹤與此 Application 整體有關聯的項目（如任務或者是一些物件如`intents`和`flow rules`）。為了要取得有效的 ID，Application 將會提供自己的名字（遵循 DNS 的表示法，如 org.onlab.onos.fwd） ，向`CoreService`進行註冊。
+
+> 並非所有子系統都擁有這些全部的元件，也不是所有的元件都嚴格遵循他們所負責的功能。
