@@ -36,6 +36,6 @@ ONOS 被分成以下三個部分：
 
 上述的每一個分部都是在 ONOS 層級架構的其中一層。network-facing 透過南向 API 與 core 進行溝通，core 跟 applications 則利用北向 API 進行溝通。南向 API 定義了 protocol-neutral 其用於回報網路狀況給 core。北向 API 則提供抽象化後的網路元件及屬性，以便 application 依獲得的網路狀況，進行對應的反應。
 
-### 將協定以不可知論（Protocol Agnosticism）
+### 協定未知論（Protocol Agnosticism）
 
 當 ONOS 需要支援一個新的協定時，ONOS 及可建立一個對應的南向 network-facing 模組，且此模組需像一個插件，可直接載入系統中運行。
