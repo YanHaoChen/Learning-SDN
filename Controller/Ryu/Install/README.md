@@ -29,7 +29,7 @@ $ sudo pip install tinyrpc
 $ sudo pip install ovs
 ```
 
-> 如是 Ubuntu 16.04 版的環境，在執行`sudo pip install --upgrade pip`此行後可能會出問題。後來要安裝的模組出現這樣的提示：
+> 如果是 Ubuntu 16.04 版的環境，在執行`sudo pip install --upgrade pip`此行後可能會出現問題。後來要安裝的模組，在安裝時出現這樣的提示：
 >
 > ```
 > Traceback (most recent call last):
@@ -42,13 +42,13 @@ $ sudo pip install ovs
 >
 > ```
 > $ curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-> # 如你的 python 就是 python2的版本
+> # 如果你的 python 就是 python2 的版本
 > $ python get-pip.py --force-reinstall
 > ```
 >
 > 解決方式參考來源：https://stackoverflow.com/questions/49940813/pip-no-module-named-internal
 >
-> 註：pip 原本有的模組也會被刪除。 
+> 註：pip 原本有的模組也會需要重新安裝。 
 
 2. 利用 git 載下 Ryu，並執行安裝
 
