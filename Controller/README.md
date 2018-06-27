@@ -10,7 +10,7 @@ Ryu 在安裝、編寫控制邏輯（Forwarding...）都相當好上手，執行
 
 * [Ryu](https://github.com/OSE-Lab/Learning-SDN/tree/master/Controller/Ryu)
 
-### 選擇 Ryu 的理由（框架完整，適合商業用）
+### 選擇 ONOS 的理由（框架完整，適合商業用）
 
 ONOS 的完整度，相較於 Ryu 高出很多。已經有很多現成的模組可以使用，但也因為完整度高，入門的技術門檻也高出許多，因為不只有單單 SDN 的技術要瞭解，還有一些系統方面的知識也需要具備。雖然不是一個好入門的 Controller，但它的學習價值極高，因為其商業用的可能性。
 
