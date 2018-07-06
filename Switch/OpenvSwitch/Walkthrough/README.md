@@ -574,7 +574,7 @@ NXST_FLOW reply (xid=0x4):
 ...
 ```
 
-接下來，我們加入另一個封包，來試試看如果封包要傳送到的主機存在於 learing table 中，會發生什麼事：
+接下來，我們加入另一個封包，來試試看如果封包要傳送到的主機存在於 learning table 中，會發生什麼事：
 
 ```bash
 $ sudo ovs-appctl ofproto/trace br0 in_port=2,dl_src=90:00:00:00:00:01,dl_dst=f0:00:00:00:00:01 -generate
@@ -698,9 +698,9 @@ Datapath actions: push_vlan(vid=30,pcp=0),2,pop_vlan,5
 ```
 也因為是從 access port 進入，因此與剛剛的測試有些不同。在此，先加上了 VLAN（```push_vlan(vid=30,pcp=0)```），在進行接下來的廣播。
 
-### EXAMPLE 2: MAC Learing
+### EXAMPLE 2: MAC Learning
 
-接下來，測試 MAC learing 的成果。在此，把```port 1```當成主機```10:00:00:00:00:01```，並將封包傳送至主機```20:00:00:00:00:01```，讓 OVS 進行學習：
+接下來，測試 MAC learning 的成果。在此，把```port 1```當成主機```10:00:00:00:00:01```，並將封包傳送至主機```20:00:00:00:00:01```，讓 OVS 進行學習：
 
 ```bash
 $ sudo ovs-appctl ofproto/trace br0 in_port=1,dl_vlan=30,dl_src=10:00:00:00:00:01,dl_dst=20:00:00:00:00:01 -generate
