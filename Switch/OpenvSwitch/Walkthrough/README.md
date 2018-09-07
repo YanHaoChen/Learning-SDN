@@ -198,7 +198,7 @@ NXST_FLOW reply (xid=0x4):
 先直接跑一下這項指令看看：
 
 ```bash
-$ sudo ovs-appctl ofproto/trace br0 in_port=1,dl_dst=01:80:c2:00:00:10
+$ sudo ovs-appctl ofproto/trace br0 in_port=1,dl_dst=01:80:c2:00:00:05
 ```
 跑完後，預計你可以看到這樣的輸出：
 
@@ -642,8 +642,8 @@ EOF
 
 ```bash
 $ sudo ovs-ofctl add-flows br0 - << 'EOF'
-table=4 reg0=0 priority=99 dl_vlan=20 actions=1,strip,2
-table=4 reg0=0 priority=99 dl_vlan=30 actions=1,strip,3,4
+table=4 reg0=0 priority=99 dl_vlan=20 actions=1,strip_vlan,2
+table=4 reg0=0 priority=99 dl_vlan=30 actions=1,strip_vlan,3,4
 table=4 reg0=0 priority=50 actions=1
 EOF
 ```
