@@ -23,7 +23,7 @@ $ mkdir sdn
 
 ```bash
 $ cd sdn
-$ vagant init ubuntu/trusty64
+$ vagrant init ubuntu/trusty64
 ```
 
 執行完後，現在就可以把機器打開了：
