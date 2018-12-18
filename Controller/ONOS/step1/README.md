@@ -147,7 +147,7 @@ Hit '<ctrl-d>' or type 'system:shutdown' or 'logout' to shutdown ONOS.
 透過 ssh 進入 ONOS CLI 介面：
 
 ```shell
-ssh -p 8081 onos@<Target machine IP>
+ssh -p 81 onos@<Target machine IP>
 ```
 
 ##### GUI
