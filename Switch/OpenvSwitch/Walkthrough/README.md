@@ -258,7 +258,7 @@ ovs-ofctl add-flow br0 "table=1, priority=0, actions=drop"
 
 ```bash
 $ sudo ovs-ofctl add-flow br0 \
-"table=1, proirity=99, in_port=1, actions=resubmit(,2)"
+"table=1, priority=99, in_port=1, actions=resubmit(,2)"
 ```
 
 其他的 port 我們則是希望將沒有標明 VLAN header 的封包，進行標注 VLAN number，再讓此封包往下一階段轉送：
