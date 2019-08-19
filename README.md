@@ -33,6 +33,12 @@ SDN（Software-defined networking，軟體定義網路）是一個相當大的�
 
 > 其餘章節，讀者可以依需求閱讀。每個項目都會有一個目錄（如：[Ryu](https://github.com/OSE-Lab/Learning-SDN/tree/master/Controller/Ryu)）讀者可以透過目錄，找尋自己有興趣的內容閱讀。
 
+## 實驗專區
+
+此部分的文章，主要談論實驗環境的建立方式。
+
+* [利用 Vagrant 快速建立 1 台 Controller（Ryu） 2 台 OVS 之虛擬環境](https://github.com/OSE-Lab/Learning-SDN/tree/master/Experiment/Ryu1OVS2)
+
 ## 實際設備操作
 
 * [Pica8 P-3297 實際操作-連結與模式設定](https://github.com/OSE-Lab/Learning-SDN/tree/master/Pica8-P-3297/ConnectAndSetEnvironment)

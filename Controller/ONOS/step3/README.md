@@ -39,7 +39,7 @@ protected void activate() {
         log.info("Started");
 }
 ```
-首先，註冊這個 App 並取得 appId。appId 是全域變數，之後操作上會使用到。接下來，註冊處理區段，並加上條件__只收 Ethernet Type 為 ARP 或 IPV4 的封包__。在此加上的條件，其實就會轉成 Flow 下達至管理的 Switch 中，其 Flow 如下：
+首先，註冊這個 App 並取得 appId。appId 是全域變數，之後操作上會使用到。接下來，註冊處理區段，並加上條件**只收 Ethernet Type 為 ARP 或 IPV4 的封包**。在此加上的條件，其實就會轉成 Flow 下達至管理的 Switch 中，其 Flow 如下：
 
 Match|Priority|Action|
 ---|---|---
