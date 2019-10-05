@@ -500,7 +500,7 @@ NXST_FLOW reply (xid=0x4):
 
 ```bash
 $ sudo ovs-ofctl add-flow br0 \
-"table=3 priority=50 actions=resumbit(,10), resubmit(,4)"
+"table=3 priority=50 actions=resubmit(,10), resubmit(,4)"
 ```
 
 封包經過```table 10```後，```register 0```只會有兩結果。第一種，找到將要轉送的 port number，並記錄在其中。第二種，則是在```table 10```中，找不到可以```match```的規則，```register 0```中記錄的數值就會為```0```。最後，轉往```table 4```進行最後處理。
@@ -745,6 +745,11 @@ Datapath actions: push_vlan(vid=30,pcp=0),2
 ```
 
 從以上的資訊，我們可以發現學習是成功的。在轉往```table 10```後，```match```到規則```Rule: table=10 cookie=0 vlan_tci=0x001e/0x0fff,dl_dst=10:00:00:00:00:01```，也就是上一個封包讓 OVS 所學習到的主機位置，並成功傳送目的主機（```Datapath actions: push_vlan(vid=30,pcp=0),2```）。結束這個測試，也代表了完成 OVS 下的 VLAN 實作方式。
+
+### Flow Chart: 簡單的繪製出以上實驗結果之架構流程圖
+
+![Flow chart of this experiment](./img/flow_chart.jpg?raw=true "Flow Chart")
+
 
 ## 參考
 
