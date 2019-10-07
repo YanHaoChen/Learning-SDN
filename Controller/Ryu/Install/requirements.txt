@@ -1,0 +1,12 @@
+greenlet>=0.4.15
+oslo.config>=6.11.1
+msgpack>=0.6.2
+eventlet>=0.18.2
+Routes>=2.4.1
+WebOb>=1.8.5
+distribute>=0.7.3
+paramiko>=2.6.0
+tinyrpc>=1.0.3
+ovs>=2.11.0
+
+
