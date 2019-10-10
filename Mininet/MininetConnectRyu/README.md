@@ -25,7 +25,7 @@ $ sudo mn --topo single,3 --mac --switch ovsk --controller=remote,ip=192.168.1.1
 //開啟各台設備(host、switch、controoler)的 terminal，這也是為甚麼建議 Mininet 安裝在 Ubuntu Desktop 版上的原因(可以一次顯示多個 terminal)
 -x
 ```
-執行後，Mininet 就會建立一個網路，包含3台 host、1台 ovs switch 及1台連結外部的 controller（Ryu）。要注意的是，switch 尚未進行設定（ovs 的 bridge 使用的協定為何），如果沒有設定好，Ryu 是沒辦法正常運作的。
+執行後，Mininet 就會建立一個網路，包含3台 host、1台 ovs switch 及1台連結外部的 controller（Ryu）。要注意的是，switch 尚未進行設定（ovs 的 bridge 使用的協定為何），如果沒有設定好，Ryu 是沒辦法正常運作的。對於Ryu還沒有認識的小夥伴可以先移步到[Controller](https://github.com/OSE-Lab/Learning-SDN/tree/master/Controller)的區域，先將Controller的Server先架起。
 
 > 在執行前，記得先開啟 Ryu 的主機，不然會一直卡在 add controller。
 

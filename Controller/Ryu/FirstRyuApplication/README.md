@@ -20,7 +20,7 @@ class L2Switch(app_manager.RyuApp):
 		super(L2Switch, self).__init__(*args, **kwargs)
 ```
 
-在這裡使用```super```，是為了執行父類別（```app_manager.RyuApp```）初始化時，會執行的程式。
+在這裡使用```super```，是為了執行父類別（```app_manager.RyuApp```）初始化時所繼承下來的程式。
 
 試著執行這隻程式：
 
@@ -52,12 +52,9 @@ class L2Switch(ryu_manager.RyuApp):
 
 ```python
 from ryu.base import app_manager
-from ryu.ofproto import ofproto_v1_0
-
 from ryu.controller import ofp_event
-from ryu.controller.handler import MAIN_DISPATCHER
-from ryu.controller.handler import set_ev_cls
-
+from ryu.controller.handler import MAIN_DISPATCHER, set_ev_cls
+from ryu.ofproto import ofproto_v1_0
 
 class L2Switch (app_manager.RyuApp):
 	OFP_VERSIONS = [ofproto_v1_0.OFP_VERSION]

@@ -28,6 +28,12 @@ $ sudo pip install paramiko
 $ sudo pip install tinyrpc
 $ sudo pip install ovs
 ```
+或推薦直接使用以下批次下載
+```shell
+sudo pip install -r ./requirement.txt
+
+```
+
 
 > 如果是 Ubuntu 16.04 版的環境，在執行`sudo pip install --upgrade pip`此行後可能會出現問題。後來要安裝的模組，在安裝時出現這樣的提示：
 >
